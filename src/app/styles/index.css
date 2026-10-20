@@ -1,0 +1,66 @@
+:root {
+  --color-accent: #ef3124;
+  --color-accent-hover: #d82a1e;
+  --color-on-accent: #fff;
+  --color-text: #0b1f35;
+  --color-text-secondary: #5e6b7a;
+  --color-bg: #f3f4f5;
+  --color-surface: #fff;
+  --color-surface-muted: #f2f3f5;
+  --color-border: #e6e8eb;
+  --color-promo-bg: #121212;
+  --color-positive: #0b8a3a;
+  --color-positive-bg: #e3f6ea;
+  --color-negative: #d4271b;
+  --color-negative-bg: #fde8e6;
+
+  --radius-s: 8px;
+  --radius-m: 12px;
+  --radius-l: 16px;
+  --shadow-card: 0 1px 2px rgb(11 31 53 / 6%), 0 4px 16px rgb(11 31 53 / 4%);
+  --content-width: 1200px;
+
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+}
+
+a {
+  color: var(--color-accent);
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 32px;
+}
+
+.page-subtitle {
+  margin: 0 0 16px;
+  color: var(--color-text-secondary);
+}

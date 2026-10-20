@@ -1,0 +1,21 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+}
+
+.badge[data-tone='positive'] {
+  background: var(--color-positive-bg);
+  color: var(--color-positive);
+}
+
+.badge[data-tone='negative'] {
+  background: var(--color-negative-bg);
+  color: var(--color-negative);
+}
