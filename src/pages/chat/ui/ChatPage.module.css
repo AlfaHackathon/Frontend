@@ -21,12 +21,19 @@
 .allMenu{right:0;top:50px}
 .allMenu button{display:flex;align-items:center;justify-content:space-between;width:100%;height:auto;min-height:36px;padding:8px 10px;border:0;border-radius:7px;background:none;color:#425064;text-align:left;font:inherit;font-size:13px;cursor:pointer}
 .allMenu button:hover{background:#f5f6f8}
+.filterRow{display:flex;gap:5px;padding:4px 5px 8px;border-bottom:1px solid #eceef1;margin-bottom:4px}
+.allMenu .filterRow button{justify-content:center;min-height:32px;padding:5px 9px}
+.filterRow button[aria-pressed=true]{background:#fff1ee;color:#e32d27}
+.chatMenuRow{display:flex;align-items:center;min-width:0}
+.chatMenuRow>button:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.allMenu .chatMenuRow>button:not(:first-child){flex:none;width:29px;min-height:29px;padding:0;justify-content:center}
 .menuNotice{display:block;padding:9px 10px;color:#8794a5;font-size:13px}
 .landing{flex:1;min-height:0;overflow-y:auto}
 .landingInner{width:min(1100px,calc(100% - 64px));margin:0 auto;padding-top:123px}
 .welcome{text-align:center}
 .welcome h1{margin:0;color:#303640;font-size:36px;font-weight:600;line-height:44px;letter-spacing:-.025em}
 .welcome p{margin:14px 0 0;color:#68778b;font-size:16px;line-height:20px}
+.connectButton{display:block;margin:22px auto 0;padding:10px 16px;border:0;border-radius:9px;background:#fff1ee;color:#d9231d;font:inherit;cursor:pointer}
 .composerWrap{width:100%;margin-top:36px}
 .composer{display:flex;flex-direction:column;width:100%;height:144px;padding:20px 21px 18px;border:1px solid #ecd8d3;border-radius:23px;background:#fff}
 .composer:focus-within{border-color:#efaaa3}
@@ -57,6 +64,8 @@
 .thread .composerWrap{flex:none;margin:0 0 25px}
 .thread .composer{height:124px}
 .notice{margin:0;color:#8794a5;font-size:14px}
+.archivedNotice{margin:0 24px 10px;color:#69778a;font-size:13px}
+.reconnectButton{align-self:flex-start;margin:0 24px 10px;padding:8px 12px;border:0;border-radius:8px;background:#fff1ee;color:#d9231d;font:inherit;font-size:13px;cursor:pointer}
 .error{position:absolute;z-index:2;right:40px;bottom:20px;max-width:380px;padding:10px 13px;border-radius:9px;background:#fff1ee;color:#bb302b;font-size:13px}
 .accessBackdrop{position:absolute;inset:0;z-index:5;display:grid;place-items:center;background:#17202b6b}
 .accessDialog{position:relative;display:grid;gap:12px;width:min(430px,calc(100% - 32px));padding:30px;border-radius:20px;background:#fff;box-shadow:0 20px 60px #14202e3d}

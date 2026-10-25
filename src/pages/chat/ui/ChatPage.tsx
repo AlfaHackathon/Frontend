@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useFlueAgent } from '@flue/react'
 import { createFlueClient } from '@flue/sdk'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { ArrowRight, ArrowUp, FileText, LayoutGrid, List, MessageSquareText, Sparkles } from 'lucide-react'
-import { chatApi, type Chat } from '@/entities/chat'
+import { chatApi, type Chat, type ChatArchiveFilter } from '@/entities/chat'
+import { useSession } from '@/entities/session'
 import { BankShell } from '@/pages/bank/ui/BankShell'
 import { BankIcon } from '@/pages/bank/ui/BankIcon'
 import { env, routes } from '@/shared/config'
@@ -79,18 +80,19 @@ function Composer({ value, setValue, send, busy = false, stop, disabled = false 
   </div>
 }
 
-function Conversation({ id, token }: { id: string; token: string }) {
+function Conversation({ id, token, onAccess }: { id: string; token: string; onAccess: () => void }) {
   const [draft, setDraft] = useState('')
   const [error, setError] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const sentPending = useRef(false)
   const client = useMemo(() => createFlueClient({ url: `${env.agentServiceUrl}/agents/assistant/${encodeURIComponent(id)}`, token }), [id, token])
   const agent = useFlueAgent({ client })
+  const chat = useQuery({ queryKey: ['chat', id, token], queryFn: () => chatApi.get(id, token), retry: false })
   const messages = agent.messages.filter((message) => message.display === 'visible' && (message.role === 'user' || message.role === 'assistant'))
   const busy = agent.status === 'submitted' || agent.status === 'streaming'
   useEffect(() => { bottomRef.current?.scrollIntoView({ block: 'end' }) }, [agent.messages])
   useEffect(() => {
-    if (!agent.historyReady || sentPending.current) return
+    if (!agent.historyReady || chat.data?.archivedAt || sentPending.current) return
     const pending = readPendingQuestion()
     if (!pending || pending.chatId !== id) return
     sentPending.current = true
@@ -100,11 +102,11 @@ function Conversation({ id, token }: { id: string; token: string }) {
         sessionStorage.removeItem(PENDING_KEY)
         sessionStorage.removeItem(`${SEND_KEY_PREFIX}${id}`)
       })
-      .catch((cause: unknown) => { setDraft(pending.question); setError(errorMessage(cause)) })
-  }, [agent, agent.historyReady, id])
+      .catch((cause: unknown) => { sessionStorage.removeItem(PENDING_KEY); setDraft(pending.question); setError(errorMessage(cause)) })
+  }, [agent, agent.historyReady, chat.data?.archivedAt, id])
   async function send() {
     const question = draft.trim()
-    if (!question || busy) return
+    if (!question || busy || chat.data?.archivedAt) return
     setDraft('')
     setError(null)
     try {
@@ -118,50 +120,82 @@ function Conversation({ id, token }: { id: string; token: string }) {
   return <div className={styles.thread}>
     <div className={styles.transcript} aria-live="polite" aria-label="Сообщения чата">
       {!agent.historyReady && <p className={styles.notice}>Загружаем историю…</p>}
+      {chat.isError && <p className={styles.notice} role="alert">{errorMessage(chat.error)}</p>}
       {messages.map((message) => <div className={styles.message} data-role={message.role} key={message.id}>
         <span className={styles.avatar}>{message.role === 'assistant' ? <BankIcon name="bot" /> : 'А'}</span>
-        <div>{message.parts.filter((part) => part.type === 'text').map((part) => part.text).join('') || 'Думаю…'}</div>
+        <div>{message.parts.filter((part) => part.type === 'text').map((part) => part.text).join('') || (message.role === 'assistant' ? 'Думаю…' : '')}</div>
       </div>)}
       {busy && messages.at(-1)?.role !== 'assistant' && <p className={styles.notice}>Агент думает…</p>}
       <div ref={bottomRef} />
     </div>
+    {chat.data?.archivedAt && <p className={styles.archivedNotice}>Диалог в архиве. Восстановите его через «Все диалоги», чтобы продолжить.</p>}
     {(error || agent.error) && <p className={styles.error} role="alert">{error || errorMessage(agent.error)}</p>}
-    <Composer value={draft} setValue={setDraft} send={() => void send()} busy={busy} stop={() => void client.abort()} disabled={!agent.historyReady} />
+    {(isAuthError(chat.error) || isAuthError(agent.error)) && <button className={styles.reconnectButton} type="button" onClick={onAccess}>Указать другой JWT</button>}
+    <Composer value={draft} setValue={setDraft} send={() => void send()} busy={busy} stop={() => void client.abort()} disabled={!agent.historyReady || !chat.data || Boolean(chat.data.archivedAt)} />
   </div>
 }
 
 export function ChatPage() {
   const { id } = useParams<{ id: string }>()
+  const location = useLocation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [customToken, setCustomToken] = useState(() => sessionStorage.getItem(TOKEN_KEY) ?? '')
+  const session = useSession()
+  const tokenKey = `${TOKEN_KEY}:${session?.userId ?? 'anonymous'}`
+  const [customToken, setCustomToken] = useState(() => sessionStorage.getItem(tokenKey) ?? '')
   const [tokenDraft, setTokenDraft] = useState(customToken)
-  const [draft, setDraft] = useState('')
+  const [draft, setDraft] = useState(() => new URLSearchParams(window.location.search).get('question') ?? '')
   const [accessOpen, setAccessOpen] = useState(false)
   const [allOpen, setAllOpen] = useState(false)
+  const [archiveFilter, setArchiveFilter] = useState<ChatArchiveFilter>('active')
   const [error, setError] = useState<string | null>(null)
   const [connecting, setConnecting] = useState(false)
-  const token = customToken
+  const token = customToken || session?.token || ''
+  useEffect(() => {
+    const saved = sessionStorage.getItem(tokenKey) ?? ''
+    setCustomToken(saved)
+    setTokenDraft(saved)
+  }, [tokenKey])
+  useEffect(() => {
+    const question = new URLSearchParams(location.search).get('question')
+    if (question) setDraft(question)
+  }, [location.search])
   const list = useInfiniteQuery({
-    queryKey: ['chats', 'active', token],
-    queryFn: ({ pageParam }) => chatApi.list(token, 'active', pageParam),
+    queryKey: ['chats', archiveFilter, token],
+    queryFn: ({ pageParam }) => chatApi.list(token, archiveFilter, pageParam),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (page) => page.nextCursor ?? undefined,
     enabled: Boolean(token),
     retry: false,
   })
-  const create = useMutation({ mutationFn: () => chatApi.create(token), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['chats'] }) })
+  const create = useMutation({ mutationFn: (title?: string) => chatApi.create(token, title), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['chats'] }) })
   const chats = list.data?.pages.flatMap((page) => page.items) ?? []
+
+  async function updateChat(chat: Chat, action: 'rename' | 'archive') {
+    try {
+      if (action === 'rename') {
+        const title = window.prompt('Название диалога', chat.title)?.trim()
+        if (!title || title === chat.title) return
+        await chatApi.rename(chat.id, title.slice(0, 200), token)
+      } else {
+        const archived = !chat.archivedAt
+        await chatApi.archive(chat.id, archived, token)
+        if (archived && id === chat.id) navigate(routes.chat)
+      }
+      await queryClient.invalidateQueries({ queryKey: ['chats'] })
+    } catch (cause) { setError(errorMessage(cause)) }
+  }
 
   async function start(question = '') {
     setError(null)
     if (!token) { setDraft(question || draft); setAccessOpen(true); return }
     try {
-      const chat = await create.mutateAsync()
+      const chat = await create.mutateAsync(question.trim().slice(0, 200) || undefined)
       if (question.trim()) {
         sessionStorage.setItem(PENDING_KEY, JSON.stringify({ chatId: chat.id, question: question.trim(), idempotencyKey: crypto.randomUUID() } satisfies PendingQuestion))
       }
       navigate(routes.chatById(chat.id))
+      setDraft('')
     } catch (cause) {
       setError(errorMessage(cause))
       if (isAuthError(cause)) { setTokenDraft(''); setAccessOpen(true) }
@@ -175,7 +209,7 @@ export function ChatPage() {
     setError(null)
     try {
       await chatApi.list(next)
-      sessionStorage.setItem(TOKEN_KEY, next)
+      sessionStorage.setItem(tokenKey, next)
       setCustomToken(next)
       setAccessOpen(false)
     } catch (cause) { setError(errorMessage(cause)) }
@@ -192,18 +226,27 @@ export function ChatPage() {
         {visibleTabs.map((chat) => <button className={`${styles.dialogTab} ${id === chat.id ? styles.selectedTab : ''}`} type="button" key={chat.id} onClick={() => navigate(routes.chatById(chat.id))}><MessageSquareText size={16} strokeWidth={1.8} />{chatTitle(chat)}</button>)}
         <div className={styles.allWrap}><button className={styles.allTab} type="button" aria-expanded={allOpen} onClick={() => setAllOpen((open) => !open)}><List size={18} strokeWidth={1.8} />Все диалоги<span className={styles.down}>⌄</span></button>
           {allOpen && <div className={styles.allMenu} role="menu" aria-label="Все диалоги">
+            <div className={styles.filterRow} role="group" aria-label="Фильтр диалогов">
+              <button type="button" aria-pressed={archiveFilter === 'active'} onClick={() => setArchiveFilter('active')}>Активные</button>
+              <button type="button" aria-pressed={archiveFilter === 'archived'} onClick={() => setArchiveFilter('archived')}>Архив</button>
+            </div>
             {token && list.isPending && <span className={styles.menuNotice}>Загружаем диалоги…</span>}
             {token && list.isError && <button role="menuitem" type="button" onClick={() => void list.refetch()}>Не удалось загрузить. Повторить</button>}
             {token && list.isSuccess && chats.length === 0 && <span className={styles.menuNotice}>Диалогов пока нет</span>}
-            {chats.map((chat) => <button role="menuitem" type="button" key={chat.id} onClick={() => { navigate(routes.chatById(chat.id)); setAllOpen(false) }}>{chatTitle(chat)}</button>)}
+            {chats.map((chat) => <div className={styles.chatMenuRow} key={chat.id}>
+              <button role="menuitem" type="button" onClick={() => { navigate(routes.chatById(chat.id)); setAllOpen(false) }}>{chatTitle(chat)}</button>
+              <button type="button" aria-label={`Переименовать ${chatTitle(chat)}`} title="Переименовать" onClick={() => void updateChat(chat, 'rename')}>✎</button>
+              <button type="button" aria-label={`${chat.archivedAt ? 'Восстановить' : 'Архивировать'} ${chatTitle(chat)}`} title={chat.archivedAt ? 'Восстановить' : 'Архивировать'} onClick={() => void updateChat(chat, 'archive')}>{chat.archivedAt ? '↩' : '▣'}</button>
+            </div>)}
             {list.hasNextPage && <button role="menuitem" type="button" disabled={list.isFetchingNextPage} onClick={() => void list.fetchNextPage()}>{list.isFetchingNextPage ? 'Загружаем…' : 'Показать ещё'}</button>}
-            <button role="menuitem" type="button" onClick={() => { setTokenDraft(customToken); setAccessOpen(true); setAllOpen(false) }}>{token ? 'Сменить JWT' : 'Подключить AgentService'}</button>
+            <button role="menuitem" type="button" onClick={() => { setTokenDraft(customToken); setAccessOpen(true); setAllOpen(false) }}>{customToken ? 'Сменить JWT' : 'Указать JWT для AgentService'}</button>
           </div>}
         </div>
       </div>
     </div>
-    {id && token ? <Conversation key={`${id}:${token}`} id={id} token={token} /> : <div className={styles.landing}><div className={styles.landingInner}>
+    {id && token ? <Conversation key={`${id}:${token}`} id={id} token={token} onAccess={() => { setTokenDraft(customToken); setAccessOpen(true) }} /> : <div className={styles.landing}><div className={styles.landingInner}>
       <div className={styles.welcome}><h1>Что разберём сегодня, Алексей?</h1><p>Помогу связать события с задачами вашего бизнеса.</p></div>
+      {!token && <button className={styles.connectButton} type="button" onClick={() => setAccessOpen(true)}>Подключить AgentService</button>}
       <Composer value={draft} setValue={setDraft} send={() => void start(draft)} disabled={create.isPending} />
       <div className={styles.promptArea}><div className={styles.promptHeading}>МОЖНО НАЧАТЬ С ЭТОГО</div>
         <div className={styles.prompts}>{suggestions.map((item) => <button className={styles.prompt} type="button" key={item.title} onClick={() => void start(item.title)}><item.Icon size={20} strokeWidth={1.8} /><ArrowRight className={styles.promptArrow} size={18} strokeWidth={1.8} /><strong>{item.title}</strong><small>{item.detail}</small></button>)}</div>
@@ -212,7 +255,7 @@ export function ChatPage() {
     {error && <p className={styles.error} role="alert">{error}</p>}
     {accessOpen && <div className={styles.accessBackdrop} onMouseDown={(event) => { if (event.target === event.currentTarget) setAccessOpen(false) }}><form className={styles.accessDialog} onSubmit={submitToken}>
       <button className={styles.accessClose} type="button" aria-label="Закрыть" onClick={() => setAccessOpen(false)}>×</button>
-      <h2>Подключить Агента</h2><p>Для ответа подключите доступ к AgentService.</p><label htmlFor="agent-token">JWT пользователя</label>
+      <h2>Подключить Агента</h2><p>Укажите JWT вашего пользователя с доступом к AgentService.</p><label htmlFor="agent-token">JWT пользователя</label>
       <input id="agent-token" type="password" value={tokenDraft} onChange={(event) => setTokenDraft(event.target.value)} placeholder="Вставьте JWT" autoComplete="off" required />
       {error && <p className={styles.accessError} role="alert">{error}</p>}
       <button type="submit" disabled={connecting}>{connecting ? 'Проверяем…' : 'Подключиться'}</button>

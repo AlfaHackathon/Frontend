@@ -1,5 +1,4 @@
-import { createBrowserRouter } from 'react-router'
-import { AgentPage } from '@/pages/agent'
+import { createBrowserRouter, Navigate } from 'react-router'
 import { AnalyticsPage } from '@/pages/analytics'
 import { BankPage } from '@/pages/bank'
 import { BriefingHomePage } from '@/pages/briefing-home'
@@ -24,7 +23,7 @@ export const router = createBrowserRouter([
     children: [
       { path: routes.feed, element: <FeedPage /> },
       { path: routes.insight(':id'), element: <InsightPage /> },
-      { path: routes.agent, element: <AgentPage /> },
+      { path: routes.agent, element: <Navigate to={routes.chat} replace /> },
       { path: routes.analytics, element: <AnalyticsPage /> },
       { path: routes.news, element: <NewsPage /> },
     ],
