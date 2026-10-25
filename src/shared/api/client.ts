@@ -64,6 +64,11 @@ export const apiClient = {
   delete: <T>(path: string) => request<T>('DELETE', path),
 }
 
+// Login and registration must not send a stale access token to AuthGateway.
+export const authApiClient = {
+  post: <T>(path: string, body: unknown) => request<T>('POST', path, body, env.apiUrl, ''),
+}
+
 export const agentApiClient = {
   get: <T>(path: string, token: string) => request<T>('GET', path, undefined, env.agentServiceUrl, token, true),
   post: <T>(path: string, body: unknown, token: string) =>

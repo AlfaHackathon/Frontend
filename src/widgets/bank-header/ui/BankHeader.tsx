@@ -4,10 +4,13 @@ import { CalendarMIcon } from '@alfalab/icons-glyph/CalendarMIcon'
 import { DoorOpenMIcon } from '@alfalab/icons-glyph/DoorOpenMIcon'
 import { MagnifierMIcon } from '@alfalab/icons-glyph/MagnifierMIcon'
 import { MailMIcon } from '@alfalab/icons-glyph/MailMIcon'
+import { useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from 'react-router'
 import { useCompanyGroup, useCompanyMembers, useMyCompany } from '@/entities/company'
-import { useSession } from '@/entities/session'
+import { sessionStore, useSession } from '@/entities/session'
 import { useUser } from '@/entities/user'
 import { MegaphoneMIcon } from '@/shared/ui/icons'
+import { routes } from '@/shared/config'
 import styles from './BankHeader.module.css'
 
 interface BankHeaderProps {
@@ -16,6 +19,8 @@ interface BankHeaderProps {
 
 export function BankHeader({ onMenuClick }: BankHeaderProps) {
   const session = useSession()
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { data: user } = useUser(session?.userId)
   const { data: company } = useMyCompany(!!session)
   const { data: group } = useCompanyGroup(!!session)
@@ -66,7 +71,11 @@ export function BankHeader({ onMenuClick }: BankHeaderProps) {
 
         <div className={styles.divider} />
 
-        <button type="button" className={styles.iconButton} aria-label="Выйти">
+        <button type="button" className={styles.iconButton} aria-label="Выйти" onClick={() => {
+          sessionStore.clear()
+          queryClient.clear()
+          navigate(routes.login)
+        }}>
           <DoorOpenMIcon />
         </button>
       </div>

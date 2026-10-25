@@ -73,7 +73,7 @@ src/
 
 | Сервис         | Префикс            | Где во фронте               |
 | -------------- | ------------------ | --------------------------- |
-| AuthGateway    | `/auth`            | `entities/session`          |
+| AuthService    | `/auth-service`    | `entities/session`          |
 | UserService    | `/user-service`    | `entities/user`             |
 | CompanyService | `/company-service` | `entities/company`          |
 | InsightService | `/insight-service` | `entities/insight`          |
@@ -81,44 +81,42 @@ src/
 
 ### Чат на Flue
 
-Страница `/chat` работает с `https://api.cheremha.ru/agent-service` через одноимённый локальный прокси Vite; для Vercel нужен rewrite в `vercel.json`. Список чатов загружается постранично через `GET /chats`, новый чат создаётся через `POST /chats`. История, отправка сообщений, потоковые ответы и остановка генерации работают через `@flue/sdk` и `@flue/react` по `/agents/assistant/{chatId}`. Текущий [Swagger AgentService](https://api.cheremha.ru/agent-service/swagger/index.html) принимает только текстовые сообщения: вложения и выбор источника ответа пока недоступны.
+Страница `/chat` работает с AgentService через `/agent-service`. Список чатов загружается постранично через `GET /chats`, новый чат создаётся через `POST /chats`. История, отправка сообщений, потоковые ответы и остановка генерации работают через `@flue/sdk` и `@flue/react` по `/agents/assistant/{chatId}`. Текущий [Swagger AgentService](https://api.cheremha.ru/agent-service/swagger/index.html) принимает только текстовые сообщения: вложения и выбор источника ответа пока недоступны.
 
-Для `/chat` не нужен вход через почту и пароль основного приложения: страница доступна напрямую и предлагает ввести JWT при отправке первого вопроса. Токен проверяется запросом к AgentService и хранится в `sessionStorage` только этой вкладки. Нужен действующий пользовательский JWT AuthGateway; тестовый токен моковой авторизации не используется. Адрес сервиса можно переопределить через `VITE_AGENT_SERVICE_URL`.
+После входа `/chat` использует полученный пользовательский JWT. Страница также позволяет вручную указать JWT при прямом открытии без сессии. Адрес сервиса можно переопределить через `VITE_AGENT_SERVICE_URL`.
 
-> Контракты, кроме UserService, пока предположительные — места помечены `TODO`.
-> Когда бэк опубликует ручки, правим типы в `entities/*/model/types.ts` и пути в `entities/*/api`.
+### Вход
+
+Форма отправляет `{email,password}` в `POST /auth-service/login` через AuthGateway. Ответ `{accessToken,refreshToken}` сверяется с [контрактом AuthService](https://api.cheremha.ru/auth-service/swagger/index.html); ID пользователя берётся из claim `UserId` access-токена. Токен сохраняется в `localStorage` и передаётся UserService и AgentService как Bearer. При выходе сессия и кэш запросов очищаются. Сейчас при истечении access-токена нужен повторный вход.
 
 ### Моки
 
 - Включаются переменной `VITE_USE_MOCKS=true` (см. `.env.development`, `.env.production`).
 - Хендлеры — `src/app/mocks/handlers.ts`, данные — `src/app/mocks/data.ts`.
-- Код приложения про моки не знает: MSW перехватывает запросы на уровне сети.
+- AuthService и UserService не подменяются моками; остальные хендлеры остаются для демонстрационных данных.
 
 ### Работа с живым бэком локально
 
-Создайте `.env.local`:
+По умолчанию Vite проксирует `/api/*` на `https://api.cheremha.ru/*`. Для другого AuthGateway создайте `.env.local`:
 
 ```sh
-VITE_USE_MOCKS=false
 VITE_GATEWAY_URL=http://localhost:8080   # адрес AuthGateway
 ```
 
-Vite будет проксировать `/api/*` на gateway.
+Для проверки всех сервисов без моков добавьте `VITE_USE_MOCKS=false`.
 
-## Деплой на Vercel
+## Хостинг на сервере
 
-1. Vercel → **Add New → Project** → импортировать `AlfaHackathon/Frontend`.
-2. Framework определится как Vite, настройки по умолчанию подходят (`npm run build`, `dist`).
-3. Каждый push в `main` → продакшен, каждый PR → отдельная preview-ссылка.
+Соберите статику командой `npm run build` и отдавайте `dist` вашим веб-сервером. При `VITE_API_URL=/api` настройте прокси на AuthGateway с удалением префикса `/api`; пример для nginx:
 
-Пока бэк не доступен из интернета, прод работает на моках (`.env.production`).
-Когда у AuthGateway появится публичный адрес — добавить в `vercel.json` **перед** SPA-правилом:
-
-```json
-{ "source": "/api/:path*", "destination": "https://<адрес-gateway>/:path*" }
+```nginx
+location /api/ {
+    proxy_pass https://api.cheremha.ru/;
+    proxy_set_header Host api.cheremha.ru;
+}
 ```
 
-и поставить `VITE_USE_MOCKS=false`. Так браузер ходит на тот же домен, и CORS настраивать не нужно.
+Для собственного gateway замените адрес и Host. Маршрут `/agent-service/` также должен проксироваться на AgentService через AuthGateway; для SSE отключите буферизацию прокси. Когда остальные сервисы будут подключены, установите `VITE_USE_MOCKS=false` в окружении сборки.
 
 ## Git
 
