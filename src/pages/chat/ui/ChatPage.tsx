@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useFlueAgent } from '@flue/react'
-import { createFlueClient, type DeliveredAttachment } from '@flue/sdk'
-import { Link, useNavigate, useParams } from 'react-router'
-import { ArrowRight, ArrowUp, FileText, LayoutGrid, Link2, List, MessageSquareText, Paperclip, Sparkles } from 'lucide-react'
-import { chatApi, type Chat } from '@/entities/chat'
+import { createFlueClient } from '@flue/sdk'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
+import { ArrowRight, ArrowUp, FileText, LayoutGrid, List, MessageSquareText, Sparkles } from 'lucide-react'
+import { chatApi, type Chat, type ChatArchiveFilter } from '@/entities/chat'
 import { useSession } from '@/entities/session'
 import { BankShell } from '@/pages/bank/ui/BankShell'
 import { BankIcon } from '@/pages/bank/ui/BankIcon'
@@ -13,29 +13,38 @@ import styles from './ChatPage.module.css'
 
 const TOKEN_KEY = 'alfa-briefing:agent-token'
 const PENDING_KEY = 'alfa-briefing:pending-question'
-const sourceOptions = ['Новости и данные компании', 'Только новости', 'Только данные компании']
-const samples = ['Закупки топлива и маржа', 'Ключевая ставка', 'Логистика и поставки']
+const SEND_KEY_PREFIX = 'alfa-briefing:pending-send:'
 const suggestions = [
   { title: 'Что изменилось за сутки?', detail: 'Главное для нашей компании', Icon: FileText },
   { title: 'Что происходит с закупками?', detail: 'Риски для стоимости топлива', Icon: Sparkles },
   { title: 'Разобрать последний инсайт', detail: 'Вывод и исходные новости', Icon: LayoutGrid },
 ] as const
-let pendingSubmission: { question: string; files: File[] } | null = null
+interface PendingQuestion {
+  chatId: string
+  question: string
+  idempotencyKey: string
+}
 
-async function attachmentsFrom(files: File[]): Promise<DeliveredAttachment[]> {
-  return Promise.all(files.map(async (file): Promise<DeliveredAttachment> => {
-    if (!file.type.startsWith('image/') && file.type !== 'application/pdf') throw new Error('Можно прикрепить изображение или PDF.')
-    if (file.size > 10 * 1024 * 1024) throw new Error('Файл должен быть меньше 10 МБ.')
-    const data = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(String(reader.result).split(',')[1] ?? '')
-      reader.onerror = () => reject(reader.error)
-      reader.readAsDataURL(file)
-    })
-    return file.type === 'application/pdf'
-      ? { type: 'document', data, mimeType: 'application/pdf', filename: file.name }
-      : { type: 'image', data, mimeType: file.type, filename: file.name }
-  }))
+function readPendingQuestion(): PendingQuestion | null {
+  try {
+    const value = JSON.parse(sessionStorage.getItem(PENDING_KEY) ?? 'null') as Partial<PendingQuestion> | null
+    return value && typeof value.chatId === 'string' && typeof value.question === 'string' && typeof value.idempotencyKey === 'string'
+      ? value as PendingQuestion
+      : null
+  } catch {
+    return null
+  }
+}
+
+function idempotencyKeyFor(chatId: string, question: string): string {
+  const storageKey = `${SEND_KEY_PREFIX}${chatId}`
+  try {
+    const previous = JSON.parse(sessionStorage.getItem(storageKey) ?? 'null') as { question?: string; key?: string } | null
+    if (previous?.question === question && previous.key) return previous.key
+  } catch { /* A stale value is replaced below. */ }
+  const key = crypto.randomUUID()
+  sessionStorage.setItem(storageKey, JSON.stringify({ question, key }))
+  return key
 }
 
 function errorMessage(error: unknown): string {
@@ -46,109 +55,151 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'Не удалось выполнить запрос.'
 }
 
+function isAuthError(error: unknown): boolean {
+  return !!error && typeof error === 'object' && 'status' in error && (error.status === 401 || error.status === 403)
+}
+
 function chatTitle(chat: Chat) { return chat.title?.trim() || 'Новый диалог' }
 
 function Composer({ value, setValue, send, busy = false, stop, disabled = false }: {
-  value: string; setValue: (value: string) => void; send: (files: File[]) => void; busy?: boolean; stop?: () => void; disabled?: boolean
+  value: string; setValue: (value: string) => void; send: () => void; busy?: boolean; stop?: () => void; disabled?: boolean
 }) {
-  const [source, setSource] = useState(sourceOptions[0])
-  const [sourceOpen, setSourceOpen] = useState(false)
-  const [files, setFiles] = useState<File[]>([])
-  const inputRef = useRef<HTMLInputElement>(null)
   function keyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
-    if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); if (!disabled && !busy && value.trim()) send(files) }
+    if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); if (!disabled && !busy && value.trim()) send() }
   }
   return <div className={styles.composerWrap}>
     <div className={styles.composer}>
-      <textarea aria-label="Вопрос агенту" placeholder="Спросите, что это значит для вашего бизнеса" value={value}
+      <textarea aria-label="Вопрос агенту" placeholder="Спросите, что это значит для вашего бизнеса" value={value} maxLength={32000}
         onChange={(event) => setValue(event.target.value)} onKeyDown={keyDown} disabled={disabled} />
-      {files.length > 0 && <div className={styles.files}>{files.map((file, index) => <span key={index}>{file.name}<button type="button" aria-label={`Убрать ${file.name}`} onClick={() => setFiles((items) => items.filter((_, i) => i !== index))}>×</button></span>)}</div>}
       <div className={styles.composerActions}>
-        <input ref={inputRef} className={styles.visuallyHidden} type="file" multiple accept="image/*,.pdf" aria-label="Прикрепить файл" onChange={(event) => setFiles((items) => [...items, ...Array.from(event.target.files ?? [])])} />
-        <button className={styles.attach} type="button" aria-label="Прикрепить файл" onClick={() => inputRef.current?.click()}><Paperclip size={21} strokeWidth={2} /></button>
-        <div className={styles.sourceWrap}>
-          <button className={styles.source} type="button" aria-expanded={sourceOpen} onClick={() => setSourceOpen((open) => !open)}><Link2 size={17} strokeWidth={2} />{source}</button>
-          {sourceOpen && <div className={styles.sourceMenu} role="menu" aria-label="Источники ответа">{sourceOptions.map((option) => <button type="button" role="menuitemradio" aria-checked={source === option} key={option} onClick={() => { setSource(option); setSourceOpen(false) }}>{option}{source === option && <span>✓</span>}</button>)}</div>}
-        </div>
         {busy ? <button className={styles.send} type="button" aria-label="Остановить ответ" onClick={stop}>■</button>
-          : <button className={styles.send} type="button" aria-label="Отправить вопрос" onClick={() => send(files)} disabled={disabled || !value.trim()}><ArrowUp size={23} strokeWidth={2} /></button>}
+          : <button className={styles.send} type="button" aria-label="Отправить вопрос" onClick={send} disabled={disabled || !value.trim()}><ArrowUp size={23} strokeWidth={2} /></button>}
       </div>
     </div>
     <p className={styles.composerHint}>Enter — отправить&nbsp;&nbsp; · &nbsp;&nbsp;Shift + Enter — новая строка</p>
   </div>
 }
 
-function Conversation({ id, token }: { id: string; token: string }) {
+function Conversation({ id, token, onAccess }: { id: string; token: string; onAccess: () => void }) {
   const [draft, setDraft] = useState('')
   const [error, setError] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const sentPending = useRef(false)
   const client = useMemo(() => createFlueClient({ url: `${env.agentServiceUrl}/agents/assistant/${encodeURIComponent(id)}`, token }), [id, token])
   const agent = useFlueAgent({ client })
+  const chat = useQuery({ queryKey: ['chat', id, token], queryFn: () => chatApi.get(id, token), retry: false })
   const messages = agent.messages.filter((message) => message.display === 'visible' && (message.role === 'user' || message.role === 'assistant'))
   const busy = agent.status === 'submitted' || agent.status === 'streaming'
   useEffect(() => { bottomRef.current?.scrollIntoView({ block: 'end' }) }, [agent.messages])
   useEffect(() => {
-    if (!agent.historyReady || sentPending.current) return
-    const pending = pendingSubmission?.question ?? sessionStorage.getItem(PENDING_KEY)
-    if (!pending) return
+    if (!agent.historyReady || chat.data?.archivedAt || sentPending.current) return
+    const pending = readPendingQuestion()
+    if (!pending || pending.chatId !== id) return
     sentPending.current = true
-    sessionStorage.removeItem(PENDING_KEY)
-    const files = pendingSubmission?.files ?? []
-    pendingSubmission = null
-    void attachmentsFrom(files).then((attachments) => agent.sendMessage(pending, { idempotencyKey: crypto.randomUUID(), images: attachments.filter((item) => item.type === 'image'), documents: attachments.filter((item) => item.type === 'document') })).catch((cause: unknown) => { setDraft(pending); setError(errorMessage(cause)) })
-  }, [agent, agent.historyReady])
-  async function send(files: File[]) {
+    sessionStorage.setItem(`${SEND_KEY_PREFIX}${id}`, JSON.stringify({ question: pending.question, key: pending.idempotencyKey }))
+    void agent.sendMessage(pending.question, { idempotencyKey: pending.idempotencyKey })
+      .then(() => {
+        sessionStorage.removeItem(PENDING_KEY)
+        sessionStorage.removeItem(`${SEND_KEY_PREFIX}${id}`)
+      })
+      .catch((cause: unknown) => { sessionStorage.removeItem(PENDING_KEY); setDraft(pending.question); setError(errorMessage(cause)) })
+  }, [agent, agent.historyReady, chat.data?.archivedAt, id])
+  async function send() {
     const question = draft.trim()
-    if (!question || busy) return
+    if (!question || busy || chat.data?.archivedAt) return
     setDraft('')
     setError(null)
     try {
-      const attachments = await attachmentsFrom(files)
-      await agent.sendMessage(question, { idempotencyKey: crypto.randomUUID(), images: attachments.filter((item) => item.type === 'image'), documents: attachments.filter((item) => item.type === 'document') })
+      await agent.sendMessage(question, { idempotencyKey: idempotencyKeyFor(id, question) })
+      sessionStorage.removeItem(`${SEND_KEY_PREFIX}${id}`)
+      const pending = readPendingQuestion()
+      if (pending?.chatId === id && pending.question === question) sessionStorage.removeItem(PENDING_KEY)
     }
     catch (cause) { setDraft(question); setError(errorMessage(cause)) }
   }
   return <div className={styles.thread}>
     <div className={styles.transcript} aria-live="polite" aria-label="Сообщения чата">
       {!agent.historyReady && <p className={styles.notice}>Загружаем историю…</p>}
+      {chat.isError && <p className={styles.notice} role="alert">{errorMessage(chat.error)}</p>}
       {messages.map((message) => <div className={styles.message} data-role={message.role} key={message.id}>
         <span className={styles.avatar}>{message.role === 'assistant' ? <BankIcon name="bot" /> : 'А'}</span>
-        <div>{message.parts.filter((part) => part.type === 'text').map((part) => part.text).join('') || 'Думаю…'}</div>
+        <div>{message.parts.filter((part) => part.type === 'text').map((part) => part.text).join('') || (message.role === 'assistant' ? 'Думаю…' : '')}</div>
       </div>)}
       {busy && messages.at(-1)?.role !== 'assistant' && <p className={styles.notice}>Агент думает…</p>}
       <div ref={bottomRef} />
     </div>
+    {chat.data?.archivedAt && <p className={styles.archivedNotice}>Диалог в архиве. Восстановите его через «Все диалоги», чтобы продолжить.</p>}
     {(error || agent.error) && <p className={styles.error} role="alert">{error || errorMessage(agent.error)}</p>}
-    <Composer value={draft} setValue={setDraft} send={(files) => void send(files)} busy={busy} stop={() => void client.abort()} disabled={!agent.historyReady} />
+    {(isAuthError(chat.error) || isAuthError(agent.error)) && <button className={styles.reconnectButton} type="button" onClick={onAccess}>Указать другой JWT</button>}
+    <Composer value={draft} setValue={setDraft} send={() => void send()} busy={busy} stop={() => void client.abort()} disabled={!agent.historyReady || !chat.data || Boolean(chat.data.archivedAt)} />
   </div>
 }
 
 export function ChatPage() {
   const { id } = useParams<{ id: string }>()
+  const location = useLocation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const session = useSession()
-  const [customToken, setCustomToken] = useState(() => sessionStorage.getItem(TOKEN_KEY) ?? '')
+  const tokenKey = `${TOKEN_KEY}:${session?.userId ?? 'anonymous'}`
+  const [customToken, setCustomToken] = useState(() => sessionStorage.getItem(tokenKey) ?? '')
   const [tokenDraft, setTokenDraft] = useState(customToken)
-  const [draft, setDraft] = useState('')
+  const [draft, setDraft] = useState(() => new URLSearchParams(window.location.search).get('question') ?? '')
   const [accessOpen, setAccessOpen] = useState(false)
   const [allOpen, setAllOpen] = useState(false)
+  const [archiveFilter, setArchiveFilter] = useState<ChatArchiveFilter>('active')
   const [error, setError] = useState<string | null>(null)
   const [connecting, setConnecting] = useState(false)
   const token = customToken || session?.token || ''
-  const list = useQuery({ queryKey: ['chats', 'active', token], queryFn: () => chatApi.list(token), enabled: Boolean(token), retry: false })
-  const create = useMutation({ mutationFn: () => chatApi.create(token), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['chats'] }) })
-  const chats = list.data ?? []
+  useEffect(() => {
+    const saved = sessionStorage.getItem(tokenKey) ?? ''
+    setCustomToken(saved)
+    setTokenDraft(saved)
+  }, [tokenKey])
+  useEffect(() => {
+    const question = new URLSearchParams(location.search).get('question')
+    if (question) setDraft(question)
+  }, [location.search])
+  const list = useInfiniteQuery({
+    queryKey: ['chats', archiveFilter, token],
+    queryFn: ({ pageParam }) => chatApi.list(token, archiveFilter, pageParam),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (page) => page.nextCursor ?? undefined,
+    enabled: Boolean(token),
+    retry: false,
+  })
+  const create = useMutation({ mutationFn: (title?: string) => chatApi.create(token, title), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['chats'] }) })
+  const chats = list.data?.pages.flatMap((page) => page.items) ?? []
 
-  async function start(question = '', files: File[] = []) {
+  async function updateChat(chat: Chat, action: 'rename' | 'archive') {
+    try {
+      if (action === 'rename') {
+        const title = window.prompt('Название диалога', chat.title)?.trim()
+        if (!title || title === chat.title) return
+        await chatApi.rename(chat.id, title.slice(0, 200), token)
+      } else {
+        const archived = !chat.archivedAt
+        await chatApi.archive(chat.id, archived, token)
+        if (archived && id === chat.id) navigate(routes.chat)
+      }
+      await queryClient.invalidateQueries({ queryKey: ['chats'] })
+    } catch (cause) { setError(errorMessage(cause)) }
+  }
+
+  async function start(question = '') {
     setError(null)
     if (!token) { setDraft(question || draft); setAccessOpen(true); return }
     try {
-      const chat = await create.mutateAsync()
-      if (question.trim()) { pendingSubmission = { question: question.trim(), files }; sessionStorage.setItem(PENDING_KEY, question.trim()) }
+      const chat = await create.mutateAsync(question.trim().slice(0, 200) || undefined)
+      if (question.trim()) {
+        sessionStorage.setItem(PENDING_KEY, JSON.stringify({ chatId: chat.id, question: question.trim(), idempotencyKey: crypto.randomUUID() } satisfies PendingQuestion))
+      }
       navigate(routes.chatById(chat.id))
-    } catch (cause) { setError(errorMessage(cause)) }
+      setDraft('')
+    } catch (cause) {
+      setError(errorMessage(cause))
+      if (isAuthError(cause)) { setTokenDraft(''); setAccessOpen(true) }
+    }
   }
   async function submitToken(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -157,15 +208,14 @@ export function ChatPage() {
     setConnecting(true)
     setError(null)
     try {
-      const existing = await chatApi.list(next)
-      queryClient.setQueryData(['chats', 'active', next], existing)
-      sessionStorage.setItem(TOKEN_KEY, next)
+      await chatApi.list(next)
+      sessionStorage.setItem(tokenKey, next)
       setCustomToken(next)
       setAccessOpen(false)
     } catch (cause) { setError(errorMessage(cause)) }
     finally { setConnecting(false) }
   }
-  const visibleTabs = chats.length ? chats.slice(0, 3).map((chat) => ({ id: chat.id, title: chatTitle(chat) })) : samples.map((title) => ({ id: '', title }))
+  const visibleTabs = chats.slice(0, 3)
 
   return <BankShell><div className={styles.page}>
     <div className={styles.toolbar}>
@@ -173,18 +223,31 @@ export function ChatPage() {
       <span className={styles.toolbarLabel}>Диалоги</span>
       <div className={styles.dialogTabs} role="group" aria-label="Диалоги">
         <button className={`${styles.newTab} ${!id ? styles.selectedTab : ''}`} type="button" onClick={() => navigate(routes.chat)}><span>＋</span>Новый диалог</button>
-        {visibleTabs.map((chat) => <button className={`${styles.dialogTab} ${id && chat.id === id ? styles.selectedTab : ''}`} type="button" key={chat.title} onClick={() => chat.id ? navigate(routes.chatById(chat.id)) : setDraft(chat.title)}><MessageSquareText size={16} strokeWidth={1.8} />{chat.title}</button>)}
-        <div className={styles.allWrap}><button className={styles.allTab} type="button" aria-expanded={allOpen} onClick={() => setAllOpen((open) => !open)}><List size={18} strokeWidth={1.8} />Все диалоги · {chats.length || 8}<span className={styles.down}>⌄</span></button>
+        {visibleTabs.map((chat) => <button className={`${styles.dialogTab} ${id === chat.id ? styles.selectedTab : ''}`} type="button" key={chat.id} onClick={() => navigate(routes.chatById(chat.id))}><MessageSquareText size={16} strokeWidth={1.8} />{chatTitle(chat)}</button>)}
+        <div className={styles.allWrap}><button className={styles.allTab} type="button" aria-expanded={allOpen} onClick={() => setAllOpen((open) => !open)}><List size={18} strokeWidth={1.8} />Все диалоги<span className={styles.down}>⌄</span></button>
           {allOpen && <div className={styles.allMenu} role="menu" aria-label="Все диалоги">
-            {chats.length ? chats.map((chat) => <button role="menuitem" type="button" key={chat.id} onClick={() => { navigate(routes.chatById(chat.id)); setAllOpen(false) }}>{chatTitle(chat)}</button>) : samples.map((title) => <button role="menuitem" type="button" key={title} onClick={() => { setDraft(title); setAllOpen(false) }}>{title}</button>)}
-            <button role="menuitem" type="button" onClick={() => { setAccessOpen(true); setAllOpen(false) }}>Подключить AgentService</button>
+            <div className={styles.filterRow} role="group" aria-label="Фильтр диалогов">
+              <button type="button" aria-pressed={archiveFilter === 'active'} onClick={() => setArchiveFilter('active')}>Активные</button>
+              <button type="button" aria-pressed={archiveFilter === 'archived'} onClick={() => setArchiveFilter('archived')}>Архив</button>
+            </div>
+            {token && list.isPending && <span className={styles.menuNotice}>Загружаем диалоги…</span>}
+            {token && list.isError && <button role="menuitem" type="button" onClick={() => void list.refetch()}>Не удалось загрузить. Повторить</button>}
+            {token && list.isSuccess && chats.length === 0 && <span className={styles.menuNotice}>Диалогов пока нет</span>}
+            {chats.map((chat) => <div className={styles.chatMenuRow} key={chat.id}>
+              <button role="menuitem" type="button" onClick={() => { navigate(routes.chatById(chat.id)); setAllOpen(false) }}>{chatTitle(chat)}</button>
+              <button type="button" aria-label={`Переименовать ${chatTitle(chat)}`} title="Переименовать" onClick={() => void updateChat(chat, 'rename')}>✎</button>
+              <button type="button" aria-label={`${chat.archivedAt ? 'Восстановить' : 'Архивировать'} ${chatTitle(chat)}`} title={chat.archivedAt ? 'Восстановить' : 'Архивировать'} onClick={() => void updateChat(chat, 'archive')}>{chat.archivedAt ? '↩' : '▣'}</button>
+            </div>)}
+            {list.hasNextPage && <button role="menuitem" type="button" disabled={list.isFetchingNextPage} onClick={() => void list.fetchNextPage()}>{list.isFetchingNextPage ? 'Загружаем…' : 'Показать ещё'}</button>}
+            <button role="menuitem" type="button" onClick={() => { setTokenDraft(customToken); setAccessOpen(true); setAllOpen(false) }}>{customToken ? 'Сменить JWT' : 'Указать JWT для AgentService'}</button>
           </div>}
         </div>
       </div>
     </div>
-    {id && token ? <Conversation key={`${id}:${token}`} id={id} token={token} /> : <div className={styles.landing}><div className={styles.landingInner}>
+    {id && token ? <Conversation key={`${id}:${token}`} id={id} token={token} onAccess={() => { setTokenDraft(customToken); setAccessOpen(true) }} /> : <div className={styles.landing}><div className={styles.landingInner}>
       <div className={styles.welcome}><h1>Что разберём сегодня, Алексей?</h1><p>Помогу связать события с задачами вашего бизнеса.</p></div>
-      <Composer value={draft} setValue={setDraft} send={(files) => void start(draft, files)} disabled={create.isPending} />
+      {!token && <button className={styles.connectButton} type="button" onClick={() => setAccessOpen(true)}>Подключить AgentService</button>}
+      <Composer value={draft} setValue={setDraft} send={() => void start(draft)} disabled={create.isPending} />
       <div className={styles.promptArea}><div className={styles.promptHeading}>МОЖНО НАЧАТЬ С ЭТОГО</div>
         <div className={styles.prompts}>{suggestions.map((item) => <button className={styles.prompt} type="button" key={item.title} onClick={() => void start(item.title)}><item.Icon size={20} strokeWidth={1.8} /><ArrowRight className={styles.promptArrow} size={18} strokeWidth={1.8} /><strong>{item.title}</strong><small>{item.detail}</small></button>)}</div>
       </div>
@@ -192,7 +255,7 @@ export function ChatPage() {
     {error && <p className={styles.error} role="alert">{error}</p>}
     {accessOpen && <div className={styles.accessBackdrop} onMouseDown={(event) => { if (event.target === event.currentTarget) setAccessOpen(false) }}><form className={styles.accessDialog} onSubmit={submitToken}>
       <button className={styles.accessClose} type="button" aria-label="Закрыть" onClick={() => setAccessOpen(false)}>×</button>
-      <h2>Подключить Агента</h2><p>Для ответа подключите доступ к AgentService.</p><label htmlFor="agent-token">JWT пользователя</label>
+      <h2>Подключить Агента</h2><p>Укажите JWT вашего пользователя с доступом к AgentService.</p><label htmlFor="agent-token">JWT пользователя</label>
       <input id="agent-token" type="password" value={tokenDraft} onChange={(event) => setTokenDraft(event.target.value)} placeholder="Вставьте JWT" autoComplete="off" required />
       {error && <p className={styles.accessError} role="alert">{error}</p>}
       <button type="submit" disabled={connecting}>{connecting ? 'Проверяем…' : 'Подключиться'}</button>

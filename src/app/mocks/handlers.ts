@@ -32,19 +32,4 @@ export const handlers = [
     return insight ? HttpResponse.json(insight) : new HttpResponse(null, { status: 404 })
   }),
 
-  http.post(api('/agent-service/chat'), () => {
-    const answer =
-      'Это демо-ответ из моков. Когда AgentService будет готов, здесь появится настоящий анализ.'
-    const encoder = new TextEncoder()
-    const stream = new ReadableStream({
-      async start(controller) {
-        for (const word of answer.split(' ')) {
-          await delay(60)
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ delta: `${word} ` })}\n\n`))
-        }
-        controller.close()
-      },
-    })
-    return new HttpResponse(stream, { headers: { 'Content-Type': 'text/event-stream' } })
-  }),
 ]
