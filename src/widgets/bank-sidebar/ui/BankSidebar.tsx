@@ -35,7 +35,7 @@ const bankItems: MenuItem[] = [
 ]
 
 const briefingItems = [
-  { label: 'Спросить агента', to: routes.agent },
+  { label: 'Спросить агента', to: routes.chat },
   { label: 'Инсайты', to: routes.feed },
   { label: 'Новости', to: routes.news },
 ]
@@ -73,7 +73,7 @@ function MenuLink({ item }: { item: MenuItem }) {
 
 function BriefingMenu({ briefingRef }: { briefingRef?: Ref<HTMLAnchorElement> }) {
   const { pathname } = useLocation()
-  const [open, setOpen] = useState(pathname.startsWith(routes.home))
+  const [open, setOpen] = useState(pathname.startsWith(routes.home) || pathname.startsWith(routes.chat))
 
   return (
     <div>

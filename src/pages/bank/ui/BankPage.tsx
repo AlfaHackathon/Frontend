@@ -1,3 +1,5 @@
+import { ChevronDownMIcon } from '@alfalab/icons-glyph/ChevronDownMIcon'
+import { PlusMIcon } from '@alfalab/icons-glyph/PlusMIcon'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { routes } from '@/shared/config'
@@ -44,7 +46,7 @@ export function BankPage() {
     <BankShell briefingRef={briefingRef}>
       <div className={styles.actions}>
         {quickActions.map(([icon, label]) => <div className={styles.action} key={label}><span className={styles.actionIcon}><BankIcon name={icon} /></span><strong>{label}</strong></div>)}
-        <div className={styles.actionControls}><span>＋</span><span>⌄</span></div>
+        <div className={styles.actionControls}><span><PlusMIcon /></span><span><ChevronDownMIcon /></span></div>
       </div>
 
       <div className={styles.statuses}>{paymentStatuses.map(([label, count]) => <div key={label}>{label}<span>{count}</span></div>)}</div>
