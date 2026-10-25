@@ -1,0 +1,21 @@
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.split {
+  display: flex;
+}
+
+.more {
+  height: 44px;
+  border-radius: 12px 0 0 12px;
+  font-size: 16px;
+}

@@ -9,6 +9,6 @@ export {
   type InsightImpact,
   type InsightMetric,
 } from './model/types'
-export { InsightCard } from './ui/InsightCard'
+export { InsightCard, type InsightTone } from './ui/InsightCard'
 export { CompactInsightCard } from './ui/CompactInsightCard'
-export { InsightIcon } from './ui/InsightIcon'
+export { InsightIcon, type InsightIconKind } from './ui/InsightIcon'
