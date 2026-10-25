@@ -26,6 +26,13 @@ export const sessionStore = {
   clear() {
     tokenStorage.clear()
     localStorage.removeItem('alfa-briefing:user-id')
+    sessionStorage.removeItem('alfa-briefing:pending-question')
+    for (let index = sessionStorage.length - 1; index >= 0; index--) {
+      const key = sessionStorage.key(index)
+      if (key?.startsWith('alfa-briefing:agent-token:') || key?.startsWith('alfa-briefing:pending-send:')) {
+        sessionStorage.removeItem(key)
+      }
+    }
     emit()
   },
   subscribe(listener: () => void) {

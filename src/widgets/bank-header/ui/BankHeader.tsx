@@ -74,7 +74,7 @@ export function BankHeader({ onMenuClick }: BankHeaderProps) {
         <button type="button" className={styles.iconButton} aria-label="Выйти" onClick={() => {
           sessionStore.clear()
           queryClient.clear()
-          navigate(routes.login)
+          navigate(routes.login, { replace: true })
         }}>
           <DoorOpenMIcon />
         </button>
