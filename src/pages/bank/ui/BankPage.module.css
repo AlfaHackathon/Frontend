@@ -1,65 +1,65 @@
 .actions{display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) 70px;gap:20px}
 .action,.accountCard,.offer,.history{background:#fff;border-radius:17px;box-shadow:0 7px 22px #1e202318}
-.action{height:142px;padding:15px 16px;display:flex;flex-direction:column;justify-content:flex-start}
+.action{height:142px;padding:16px;display:flex;flex-direction:column;justify-content:flex-start}
 .actionIcon{display:grid;place-items:center;width:53px;height:51px;border-radius:16px;background:#f0f1f3;color:#909196}
 .actionIcon :is(svg,img){width:27px;height:27px}
 .actionIcon img,.dateControl img,.operationSearch img{object-fit:contain}
-.action strong{margin-top:18px;font-size:20px;line-height:1.15;font-weight:400;max-width:225px;white-space:pre-line}
-.actionControls{display:flex;flex-direction:column;gap:17px}
-.actionControls span{height:63px;display:grid;place-items:center;border:2px dotted #a1a3aa;border-radius:18px;color:#8e9096;font-size:30px;font-weight:300}
-.actionControls span:last-child{border-color:#2385ff;color:#2385ff;line-height:.5}
+.action strong{margin-top:auto;font-size:18px;line-height:1.15;font-weight:400;max-width:225px;white-space:pre-line}
+.actionControls{display:flex;flex-direction:column;justify-content:space-between}
+.actionControls span{height:62px;display:grid;place-items:center;border:1.5px dashed #a1a3aa;border-radius:16px;color:#8e9096}
+.actionControls span:last-child{border-color:#2385ff;color:#2385ff}
 .statuses{display:flex;align-items:center;justify-content:space-between;gap:10px;height:71px;margin-top:29px;padding:0 34px;background:#fff;border-radius:17px;box-shadow:0 7px 22px #1e202318}
-.statuses>div{display:flex;align-items:center;gap:15px;white-space:nowrap;font-size:20px}
-.statuses span{display:grid;place-items:center;min-width:31px;height:31px;padding:0 7px;border-radius:50%;background:#f1f2f4;font-size:18px;font-weight:600}
+.statuses>div{display:flex;align-items:center;gap:14px;white-space:nowrap;font-size:18px}
+.statuses span{display:grid;place-items:center;min-width:31px;height:31px;padding:0 7px;border-radius:50%;background:#f1f2f4;font-size:16px;font-weight:600}
 .statuses>div:first-child span{background:#ff3029;color:white}
 .dashboardGrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:31px;margin-top:30px}
 .accountCard{height:331px;padding:29px 34px}
-.accountTop{display:grid;grid-template-columns:315px minmax(300px,1fr) 265px;min-height:221px}
-.balance h2{display:flex;align-items:center;gap:13px;margin:2px 0 0;font-size:20px;font-weight:400}
+.accountTop{display:grid;grid-template-columns:315px minmax(0,1fr) auto;gap:24px;min-height:221px}
+.balance h2{display:flex;align-items:center;gap:13px;margin:2px 0 0;font-size:18px;font-weight:400}
 .balance h2 span{color:#858990;font-size:17px}
-.amount{margin:14px 0 0;font-size:42px;line-height:1.05;font-weight:700;white-space:nowrap;letter-spacing:-.02em}
+.amount{margin:14px 0 0;font-size:40px;line-height:1.05;font-weight:700;white-space:nowrap;letter-spacing:-.02em}
 .amount span{color:#77787c}
-.accountNumber{margin:10px 0 25px;font-size:20px;white-space:nowrap}
+.accountNumber{margin:10px 0 25px;font-size:18px;white-space:nowrap}
 .accountNumber span{margin-left:14px;color:#7d7e84}
-.ownMoney{display:inline-flex;gap:10px;padding:10px 16px;background:#f1f2f4;border-radius:11px;white-space:nowrap;font-size:19px}
-.credit{border-left:2px dotted #e3e4e7;padding-left:38px;white-space:nowrap}
+.ownMoney{display:inline-flex;gap:10px;padding:10px 16px;background:#f1f2f4;border-radius:11px;white-space:nowrap;font-size:18px}
+.credit{min-width:0;border-left:2px dotted #e3e4e7;padding-left:38px;white-space:nowrap}
 .credit small{display:inline-block;padding:5px 10px;border-radius:4px;background:#e5f5ee;color:#00bd63;font-size:14px;font-weight:700}
-.credit p{display:flex;align-items:center;gap:10px;margin:17px 0 10px;font-size:40px;line-height:1;font-weight:700;letter-spacing:-.025em}
+.credit p{display:flex;align-items:center;gap:10px;margin:17px 0 10px;font-size:38px;line-height:1;font-weight:700;letter-spacing:-.025em}
 .credit p b{display:grid;place-items:center;width:27px;height:27px;border-radius:50%;background:#08ca60;color:#fff;font-size:22px;font-style:normal;font-weight:400;letter-spacing:0}
 .credit p em{color:#77787c;font-style:normal}
-.credit>span{font-size:20px}
-.cardPreview{display:flex;align-items:center;gap:16px;align-self:start;padding-top:37px;white-space:nowrap;font-size:19px}
+.credit>span{font-size:18px}
+.cardPreview{display:flex;align-items:center;gap:16px;align-self:start;padding-top:37px;white-space:nowrap;font-size:18px}
 .cardPreview span{color:#252525}
 .miniCard{display:grid;place-items:start;width:64px;height:41px;padding:3px 8px;background:#f9003d;color:#fff;border-radius:4px;font-weight:800;font-size:18px;text-decoration:underline}
 .accountBottom{display:flex;align-items:center;justify-content:space-between}
-.accountBottom button{border:0;border-radius:11px;background:#f0f1f3;padding:14px 27px;font:inherit;font-size:18px;font-weight:600;cursor:pointer}
-.accountBottom span{font-size:19px;margin-right:32px}
+.accountBottom button{border:0;border-radius:11px;background:#f0f1f3;padding:14px 27px;font:inherit;font-size:17px;font-weight:600;cursor:pointer}
+.accountBottom span{font-size:18px;margin-right:32px}
 .offers{display:flex;flex-direction:column;gap:12px}
 .offer{position:relative;display:flex;justify-content:space-between;align-items:flex-start;overflow:hidden;height:99px;padding:13px 16px;color:#273648;text-decoration:none;box-shadow:none;border-radius:11px}
 .offer:nth-child(2),.offer:nth-child(3){height:104px}
-.offer strong,.offer small{display:block;position:relative;z-index:1}
-.offer strong{font-size:16px;font-weight:700}
-.offer small{margin-top:10px;font-size:16px;line-height:1.19}
+.offer strong,.offer small{display:block;position:relative;z-index:1;padding-right:72px}
+.offer strong{font-size:16px;font-weight:700;line-height:1.2}
+.offer small{margin-top:4px;font-size:14px;line-height:1.25}
 .briefingOffer{background:#e7e0fa;color:#363344}
-.briefingArt{position:absolute;right:0;top:0;width:100px;height:99px;background-image:url('../../../assets/bank-dashboard-reference.png');background-position:-1754px -357px;background-repeat:no-repeat}
+.briefingArt{position:absolute;right:0;top:0;width:80px;height:99px;background-image:url('../../../assets/bank-dashboard-reference.png');background-position:-1754px -357px;background-repeat:no-repeat}
 .briefingArt i,.briefingArt b{display:none}
 .cardOffer{background:#abd4ef;color:#183749}
-.bankCardArt{position:absolute;right:0;top:0;width:100px;height:104px;background-image:url('../../../assets/bank-dashboard-reference.png');background-position:-1754px -468px;background-repeat:no-repeat;color:transparent;font-size:0}
+.bankCardArt{position:absolute;right:0;top:0;width:80px;height:104px;background-image:url('../../../assets/bank-dashboard-reference.png');background-position:-1754px -468px;background-repeat:no-repeat;color:transparent;font-size:0}
 .bonusOffer{background:#e7b7a1;color:#253447}
-.bonusArt{position:absolute;right:0;top:0;width:100px;height:104px;background-image:url('../../../assets/bank-dashboard-reference.png');background-position:-1754px -584px;background-repeat:no-repeat;color:transparent;font-size:0}
+.bonusArt{position:absolute;right:0;top:0;width:80px;height:104px;background-image:url('../../../assets/bank-dashboard-reference.png');background-position:-1754px -584px;background-repeat:no-repeat;color:transparent;font-size:0}
 .history{margin-top:30px;min-height:394px;padding:27px 11px 40px}
-.history h2{display:flex;justify-content:space-between;margin:0 0 29px;padding:0 23px 27px;border-bottom:1px solid #e6e7e9;font-size:21px;font-weight:700}
+.history h2{display:flex;justify-content:space-between;margin:0 0 29px;padding:0 23px 27px;border-bottom:1px solid #e6e7e9;font-size:20px;font-weight:700}
 .history h2 span{font-weight:400}
 .historySearch{display:grid;grid-template-columns:456px 1fr;gap:20px;margin:0 22px}
 .dateControl,.operationSearch{display:flex;align-items:center;height:61px;border-radius:11px;background:#f0f1f3}
-.dateControl{display:grid;grid-template-columns:62px 1fr 26px 29px;align-items:center;padding:0 20px;font-size:25px}
-.dateControl strong{text-align:center;font-size:22px;font-weight:400}
+.dateControl{display:grid;grid-template-columns:62px 1fr 26px 29px;align-items:center;padding:0 20px;font-size:22px}
+.dateControl strong{text-align:center;font-size:20px;font-weight:400}
 .dateControl span:nth-of-type(2){color:#b8bdc4}
 .dateControl :is(svg,img){width:27px;height:27px;color:#1c2026}
-.operationSearch{justify-content:space-between;padding:0 18px;color:#90949d;font-size:23px;white-space:nowrap}
+.operationSearch{justify-content:space-between;padding:0 18px;color:#90949d;font-size:20px;white-space:nowrap}
 .operationSearch :is(svg,img){width:27px;height:27px}
 .filters{display:flex;align-items:center;gap:10px;margin:25px 22px 0;overflow:auto;scrollbar-width:none}
-.filters>span:not(.download){padding:10px 20px;border-radius:10px;background:#f0f1f3;white-space:nowrap;font-size:19px}
+.filters>span:not(.download){padding:10px 20px;border-radius:10px;background:#f0f1f3;white-space:nowrap;font-size:17px}
 .filters .filterSliders{display:grid;place-items:center;width:64px;text-align:center}
 .filters .download{margin-left:auto;white-space:nowrap;font-size:18px;font-weight:600}
 .filters button{margin-left:25px;padding:10px 20px;border:0;border-radius:8px;background:#ff3029;color:#fff;white-space:nowrap;font-size:18px;font-weight:600}
