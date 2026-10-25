@@ -11,7 +11,7 @@ import { PlusCircleMIcon } from '@alfalab/icons-glyph/PlusCircleMIcon'
 import { PlusMIcon } from '@alfalab/icons-glyph/PlusMIcon'
 import { UsersGroupMIcon } from '@alfalab/icons-glyph/UsersGroupMIcon'
 import { WalletMIcon } from '@alfalab/icons-glyph/WalletMIcon'
-import { useState, type ComponentType, type SVGProps } from 'react'
+import { useState, type ComponentType, type Ref, type SVGProps } from 'react'
 import { NavLink, useLocation } from 'react-router'
 import { routes } from '@/shared/config'
 import { cn } from '@/shared/lib'
@@ -35,7 +35,7 @@ const bankItems: MenuItem[] = [
 ]
 
 const briefingItems = [
-  { label: 'Спросить агента', to: routes.agent },
+  { label: 'Спросить агента', to: routes.chat },
   { label: 'Инсайты', to: routes.feed },
   { label: 'Новости', to: routes.news },
 ]
@@ -71,14 +71,16 @@ function MenuLink({ item }: { item: MenuItem }) {
   )
 }
 
-function BriefingMenu() {
+function BriefingMenu({ briefingRef }: { briefingRef?: Ref<HTMLAnchorElement> }) {
   const { pathname } = useLocation()
-  const [open, setOpen] = useState(pathname.startsWith(routes.home))
+  const [open, setOpen] = useState(pathname.startsWith(routes.home) || pathname.startsWith(routes.chat))
 
   return (
     <div>
       <div className={styles.group}>
         <NavLink
+          ref={briefingRef}
+          data-onboarding-id="briefing"
           to={routes.home}
           end
           className={({ isActive }) => cn(styles.item, isActive && styles.active)}
@@ -118,9 +120,10 @@ function BriefingMenu() {
 interface BankSidebarProps {
   open?: boolean
   onNavigate?: () => void
+  briefingRef?: Ref<HTMLAnchorElement>
 }
 
-export function BankSidebar({ open = false, onNavigate }: BankSidebarProps) {
+export function BankSidebar({ open = false, onNavigate, briefingRef }: BankSidebarProps) {
   return (
     <aside className={cn(styles.sidebar, open && styles.open)} onClick={onNavigate}>
       <nav className={styles.menu}>
@@ -132,7 +135,7 @@ export function BankSidebar({ open = false, onNavigate }: BankSidebarProps) {
           <span>Мои сервисы</span>
           <PlusMIcon width={18} height={18} />
         </div>
-        <BriefingMenu />
+        <BriefingMenu briefingRef={briefingRef} />
         {serviceItems.map((item) => (
           <MenuLink key={item.label} item={item} />
         ))}

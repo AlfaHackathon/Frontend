@@ -1,2 +1,8 @@
-export { companyApi, companyKeys, useMyCompany } from './api/company-api'
-export type { Company, CompanyMember } from './model/types'
+export {
+  companyApi,
+  companyKeys,
+  useCompanyGroup,
+  useCompanyMembers,
+  useMyCompany,
+} from './api/company-api'
+export type { Company, CompanyGroup, CompanyMember } from './model/types'

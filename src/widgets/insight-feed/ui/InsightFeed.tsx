@@ -1,18 +1,20 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router'
 import {
   categoryLabels,
   InsightCard,
   useInsights,
   type InsightCategory,
 } from '@/entities/insight'
-import { AskAgentMenu } from '@/features/agent-chat'
 import { InsightFilter, type FilterTab } from '@/features/filter-insights'
+import { routes } from '@/shared/config'
 import { Button } from '@/shared/ui'
 import styles from './InsightFeed.module.css'
 
 type Tab = InsightCategory | 'all'
 
 export function InsightFeed() {
+  const navigate = useNavigate()
   const [category, setCategory] = useState<Tab>('all')
   const { data: insights = [] } = useInsights()
 
@@ -45,10 +47,9 @@ export function InsightFeed() {
             sources={item.sources}
             status={item.status}
             actions={
-              <div className={styles.split}>
-                <Button className={styles.more}>Подробнее</Button>
-                <AskAgentMenu questions={item.questions} />
-              </div>
+              <Button className={styles.more} onClick={() => navigate(routes.insight(item.id))}>
+                Подробнее
+              </Button>
             }
           />
         ))}
