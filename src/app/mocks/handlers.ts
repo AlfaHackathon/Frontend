@@ -1,13 +1,9 @@
 import { delay, http, HttpResponse } from 'msw'
 import { env } from '@/shared/config'
-import { mockCompany, mockGroup, mockInsights, mockMembers } from './data'
+import { mockInsights } from './data'
 
 const api = (path: string) => `${env.apiUrl}${path}`
 export const handlers = [
-  http.get(api('/company-service/companies/me'), () => HttpResponse.json(mockCompany)),
-  http.get(api('/company-service/companies/me/members'), () => HttpResponse.json(mockMembers)),
-  http.get(api('/company-service/companies/me/group'), () => HttpResponse.json(mockGroup)),
-
   http.get(api('/insight-service/insights'), async ({ request }) => {
     await delay(300)
     const category = new URL(request.url).searchParams.get('category')

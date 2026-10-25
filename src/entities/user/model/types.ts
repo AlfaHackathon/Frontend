@@ -5,6 +5,8 @@ export interface User {
   middleName: string | null
   email: string
   createdAt: string
+  roleId: string | null
+  roleName: string | null
 }
 
 export const getFullName = (user: Pick<User, 'firstName' | 'lastName'>) =>

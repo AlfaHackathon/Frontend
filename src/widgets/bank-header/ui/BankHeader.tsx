@@ -6,9 +6,10 @@ import { MagnifierMIcon } from '@alfalab/icons-glyph/MagnifierMIcon'
 import { MailMIcon } from '@alfalab/icons-glyph/MailMIcon'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
-import { useCompanyGroup, useCompanyMembers, useMyCompany } from '@/entities/company'
+import { useMyCompany } from '@/entities/company'
 import { sessionStore, useSession } from '@/entities/session'
-import { useUser } from '@/entities/user'
+import { getFullName, useUser } from '@/entities/user'
+import { ApiError } from '@/shared/api'
 import { MegaphoneMIcon } from '@/shared/ui/icons'
 import { routes } from '@/shared/config'
 import styles from './BankHeader.module.css'
@@ -21,11 +22,15 @@ export function BankHeader({ onMenuClick }: BankHeaderProps) {
   const session = useSession()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { data: user } = useUser(session?.userId)
-  const { data: company } = useMyCompany(!!session)
-  const { data: group } = useCompanyGroup(!!session)
-  const { data: members } = useCompanyMembers(!!session)
-  const position = members?.find((member) => member.userId === session?.userId)?.position
+  const userQuery = useUser(session?.userId)
+  const companyQuery = useMyCompany(!!session)
+  const user = userQuery.data
+  const company = companyQuery.data
+  const companyName = company?.name ?? (companyQuery.error instanceof ApiError && companyQuery.error.status === 404
+    ? 'Компания не привязана'
+    : companyQuery.isError ? 'Компания недоступна' : '')
+  const userName = user ? [getFullName(user), user.roleName].filter(Boolean).join(' · ')
+    : userQuery.isError ? 'Профиль недоступен' : ''
 
   return (
     <header className={styles.header}>
@@ -60,10 +65,8 @@ export function BankHeader({ onMenuClick }: BankHeaderProps) {
         <div className={styles.divider} />
 
         <div className={styles.company}>
-          <span className={styles.companyName}>{group?.name ?? company?.name}</span>
-          <span className={styles.userName}>
-            {[user?.firstName, position].filter(Boolean).join(' · ')}
-          </span>
+          <span className={styles.companyName}>{companyName}</span>
+          <span className={styles.userName}>{userName}</span>
         </div>
         <button type="button" className={styles.iconButton} aria-label="Профиль компании">
           <BriefcaseGearMIcon />

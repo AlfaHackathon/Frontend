@@ -5,11 +5,12 @@ export interface Company {
 
 export interface CompanyMember {
   userId: string
-  fullName: string
-  position: string
+  joinedAt: string
+  isCreator: boolean
 }
 
 export interface CompanyGroup {
-  groupId: string
-  name: string
+  current: Company
+  parent: Company | null
+  children: Company[]
 }

@@ -1,30 +1,4 @@
-import type { Company, CompanyGroup, CompanyMember } from '@/entities/company'
 import type { InsightDetails } from '@/entities/insight'
-import type { User } from '@/entities/user'
-
-export const mockUser: User = {
-  id: '00000000-0000-0000-0000-000000000001',
-  lastName: 'Петров',
-  firstName: 'Алексей',
-  middleName: null,
-  email: 'alexey@apelsin.ru',
-  createdAt: '2026-10-19T10:00:00Z',
-}
-
-export const mockCompany: Company = {
-  id: 'c-1',
-  name: 'ООО «Апельсин»',
-}
-
-export const mockMembers: CompanyMember[] = [
-  { userId: mockUser.id, fullName: 'Алексей Петров', position: 'Руководитель' },
-  { userId: 'u-2', fullName: 'Олег Макаров', position: 'Директор по закупкам' },
-]
-
-export const mockGroup: CompanyGroup = {
-  groupId: 'g-1',
-  name: 'ГК «Апельсин»',
-}
 
 export const mockInsights: InsightDetails[] = [
   {
