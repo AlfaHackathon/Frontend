@@ -13,13 +13,6 @@ export function AccountsMIcon(props: IconProps) {
   )
 }
 
-export function SparkIcon(props: IconProps) {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" {...props}>
-      <path d="M8 1c.4 2.9 2.1 4.6 5 5-2.9.4-4.6 2.1-5 5-.4-2.9-2.1-4.6-5-5 2.9-.4 4.6-2.1 5-5Zm4.5 8.5c.2 1.3.9 2 2.2 2.2-1.3.2-2 .9-2.2 2.2-.2-1.3-.9-2-2.2-2.2 1.3-.2 2-.9 2.2-2.2Z" />
-    </svg>
-  )
-}
 
 export function MegaphoneMIcon(props: IconProps) {
   return (

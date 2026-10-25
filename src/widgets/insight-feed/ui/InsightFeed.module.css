@@ -10,12 +10,8 @@
   gap: 16px;
 }
 
-.split {
-  display: flex;
-}
-
 .more {
   height: 44px;
-  border-radius: 12px 0 0 12px;
+  border-radius: 12px;
   font-size: 16px;
 }
