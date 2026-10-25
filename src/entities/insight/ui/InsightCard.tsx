@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react'
-import { InsightIcon, type InsightIconKind } from './InsightIcon'
+import type { InsightIconKind, InsightTone } from '../model/types'
+import { InsightIcon } from './InsightIcon'
 import styles from './InsightCard.module.css'
-
-export type InsightTone = 'red' | 'blue' | 'green'
 
 interface InsightCardProps {
   icon: InsightIconKind

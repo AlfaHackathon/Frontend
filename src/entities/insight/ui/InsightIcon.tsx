@@ -3,9 +3,8 @@ import { CardCardLineMIcon } from '@alfalab/icons-glyph/CardCardLineMIcon'
 import { ChartLineAscMIcon } from '@alfalab/icons-glyph/ChartLineAscMIcon'
 import { LockClosedLineMIcon } from '@alfalab/icons-glyph/LockClosedLineMIcon'
 import type { ComponentType, SVGProps } from 'react'
+import type { InsightIconKind } from '../model/types'
 import styles from './InsightIcon.module.css'
-
-export type InsightIconKind = 'risk' | 'credit-risk' | 'rate' | 'growth' | 'price-lock'
 
 function WarningIcon(props: SVGProps<SVGSVGElement>) {
   return (

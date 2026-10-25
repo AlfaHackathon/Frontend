@@ -1,32 +1,32 @@
 import { useState } from 'react'
-import { InsightCard } from '@/entities/insight'
+import {
+  categoryLabels,
+  InsightCard,
+  useInsights,
+  type InsightCategory,
+} from '@/entities/insight'
 import { AskAgentMenu } from '@/features/agent-chat'
 import { InsightFilter, type FilterTab } from '@/features/filter-insights'
 import { Button } from '@/shared/ui'
-import { feedItems, type FeedCategory } from '../model/data'
 import styles from './InsightFeed.module.css'
 
-const labels: Record<FeedCategory, string> = {
-  all: 'Все',
-  risks: 'Риски',
-  opportunities: 'Возможности',
-  events: 'События',
-  peers: 'Похожие компании',
-}
-
-const tabs: FilterTab<FeedCategory>[] = (Object.keys(labels) as FeedCategory[]).map((value) => ({
-  value,
-  label: labels[value],
-  count:
-    value === 'all' ? feedItems.length : feedItems.filter((item) => item.category === value).length,
-}))
-
-const pending = feedItems.filter((item) => item.status === 'Ждёт вашего решения').length
+type Tab = InsightCategory | 'all'
 
 export function InsightFeed() {
-  const [category, setCategory] = useState<FeedCategory>('all')
+  const [category, setCategory] = useState<Tab>('all')
+  const { data: insights = [] } = useInsights()
+
+  const tabs: FilterTab<Tab>[] = [
+    { value: 'all', label: 'Все', count: insights.length },
+    ...(Object.keys(categoryLabels) as InsightCategory[]).map((value) => ({
+      value,
+      label: categoryLabels[value],
+      count: insights.filter((item) => item.category === value).length,
+    })),
+  ]
+  const pending = insights.filter((item) => item.pending).length
   const items =
-    category === 'all' ? feedItems : feedItems.filter((item) => item.category === category)
+    category === 'all' ? insights : insights.filter((item) => item.category === category)
 
   return (
     <section className={styles.feed}>
