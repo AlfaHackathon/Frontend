@@ -1,20 +1,23 @@
-export type InsightImpact = 'positive' | 'negative' | 'neutral'
+export type InsightCategory = 'risks' | 'opportunities' | 'events' | 'peers'
 
-export type InsightMetric = 'revenue' | 'margin' | 'debt'
+export type InsightTone = 'red' | 'blue' | 'green'
 
-export interface InsightEffect {
-  metric: InsightMetric
-  change: number
-}
+export type InsightIconKind = 'risk' | 'credit-risk' | 'rate' | 'growth' | 'price-lock'
 
 export interface Insight {
   id: string
+  category: InsightCategory
+  icon: InsightIconKind
+  tone: InsightTone
+  label: string
+  time: string
   title: string
   summary: string
-  impact: InsightImpact
-  effects: InsightEffect[]
-  source: string
-  publishedAt: string
+  tag: { text: string; tone: InsightTone }
+  sources: string
+  status: string
+  pending: boolean
+  questions: string[]
 }
 
 export interface InsightDetails extends Insight {
@@ -23,17 +26,12 @@ export interface InsightDetails extends Insight {
 }
 
 export interface InsightFilters {
-  impact?: InsightImpact
+  category?: InsightCategory
 }
 
-export const metricLabels: Record<InsightMetric, string> = {
-  revenue: 'Выручка',
-  margin: 'Маржа',
-  debt: 'Долг',
-}
-
-export const impactLabels: Record<InsightImpact, string> = {
-  positive: 'Возможность',
-  negative: 'Риск',
-  neutral: 'К сведению',
+export const categoryLabels: Record<InsightCategory, string> = {
+  risks: 'Риски',
+  opportunities: 'Возможности',
+  events: 'События',
+  peers: 'Похожие компании',
 }

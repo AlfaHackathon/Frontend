@@ -1,7 +1,7 @@
 .feed {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .list {
@@ -10,7 +10,12 @@
   gap: 16px;
 }
 
-.state {
-  margin: 0;
-  color: var(--color-text-secondary);
+.split {
+  display: flex;
+}
+
+.more {
+  height: 44px;
+  border-radius: 12px 0 0 12px;
+  font-size: 16px;
 }

@@ -32,7 +32,7 @@ export function LoginPage() {
       <section className={styles.formSide}>
         <div className={styles.loginCard}>
           <h2>Вход</h2>
-          <p>Нет аккаунта? <Link to={routes.register}>Зарегистрируйте компанию</Link></p>
+          <p>Войдите с рабочей почтой</p>
           <LoginForm />
         </div>
       </section>

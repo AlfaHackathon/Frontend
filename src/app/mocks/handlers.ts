@@ -21,8 +21,8 @@ export const handlers = [
 
   http.get(api('/insight-service/insights'), async ({ request }) => {
     await delay(300)
-    const impact = new URL(request.url).searchParams.get('impact')
-    const list = impact ? mockInsights.filter((i) => i.impact === impact) : mockInsights
+    const category = new URL(request.url).searchParams.get('category')
+    const list = category ? mockInsights.filter((i) => i.category === category) : mockInsights
     return HttpResponse.json(list)
   }),
   http.get(api('/insight-service/insights/:id'), ({ params }) => {

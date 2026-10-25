@@ -23,7 +23,7 @@ export function BriefingHomePage() {
     <div className={styles.actions}>
       <Link to={routes.chat} className={styles.action}><span className={styles.actionIcon}><BankIcon name="bot" /></span><span>Спросить Агента</span></Link>
       <Link to={routes.insights} className={styles.action}><span className={styles.actionIcon}><BankIcon name="grid" /></span><span>Инсайты</span></Link>
-      <Link to={routes.feed} className={styles.action}><span className={styles.actionIcon}><BankIcon name="news" /></span><span>Новости</span></Link>
+      <Link to={routes.news} className={styles.action}><span className={styles.actionIcon}><BankIcon name="news" /></span><span>Новости</span></Link>
     </div>
 
     <section className={styles.insightsSection}>

@@ -1,1 +1,1 @@
-export { ImpactFilter } from './ui/ImpactFilter'
+export { InsightFilter, type FilterTab } from './ui/InsightFilter'

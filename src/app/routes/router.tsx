@@ -1,53 +1,32 @@
 import { createBrowserRouter } from 'react-router'
-import { CompanyPage } from '@/pages/company'
-import { ChatPage } from '@/pages/chat'
-import { FeedPage } from '@/pages/feed'
-import { HowItWorksPage } from '@/pages/how-it-works'
-import { InsightPage } from '@/pages/insight'
-import { InsightsPage } from '@/pages/insights'
-import { InvitePage } from '@/pages/invite'
-import { LoginPage } from '@/pages/login'
+import { AgentPage } from '@/pages/agent'
+import { AnalyticsPage } from '@/pages/analytics'
 import { BankPage } from '@/pages/bank'
 import { BriefingHomePage } from '@/pages/briefing-home'
+import { ChatPage } from '@/pages/chat'
+import { FeedPage } from '@/pages/feed'
+import { InsightPage } from '@/pages/insight'
+import { LoginPage } from '@/pages/login'
+import { NewsPage } from '@/pages/news'
 import { NotFoundPage } from '@/pages/not-found'
-import { RegisterPage } from '@/pages/register'
 import { routes } from '@/shared/config'
-import { AuthLayout } from '../layouts/AuthLayout'
 import { MainLayout } from '../layouts/MainLayout'
-import { GuestOnly, RequireAuth } from './guards'
 
 export const router = createBrowserRouter([
-  {
-    element: <GuestOnly />,
-    children: [
-      { path: routes.login, element: <LoginPage /> },
-      {
-        element: <AuthLayout />,
-        children: [
-          { path: routes.register, element: <RegisterPage /> },
-          { path: routes.invite, element: <InvitePage /> },
-        ],
-      },
-    ],
-  },
-  { path: routes.bank, element: <BankPage /> },
+  { path: routes.bankHome, element: <BankPage /> },
   { path: '/alfa-business', element: <BankPage /> },
-  { path: routes.briefing, element: <BriefingHomePage /> },
+  { path: routes.home, element: <BriefingHomePage /> },
   { path: routes.chat, element: <ChatPage /> },
   { path: `${routes.chat}/:id`, element: <ChatPage /> },
+  { path: routes.login, element: <LoginPage /> },
   {
-    element: <RequireAuth />,
+    element: <MainLayout />,
     children: [
-      {
-        element: <MainLayout />,
-        children: [
-          { path: routes.feed, element: <FeedPage /> },
-          { path: routes.insights, element: <InsightsPage /> },
-          { path: routes.insight(':id'), element: <InsightPage /> },
-          { path: routes.company, element: <CompanyPage /> },
-          { path: routes.howItWorks, element: <HowItWorksPage /> },
-        ],
-      },
+      { path: routes.feed, element: <FeedPage /> },
+      { path: routes.insight(':id'), element: <InsightPage /> },
+      { path: routes.agent, element: <AgentPage /> },
+      { path: routes.analytics, element: <AnalyticsPage /> },
+      { path: routes.news, element: <NewsPage /> },
     ],
   },
   { path: '*', element: <NotFoundPage /> },

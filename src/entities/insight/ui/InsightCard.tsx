@@ -1,32 +1,56 @@
-import { Link } from 'react-router'
-import { routes } from '@/shared/config'
-import { formatDate, formatPercent } from '@/shared/lib'
-import { Badge, Card } from '@/shared/ui'
-import { impactLabels, metricLabels, type Insight } from '../model/types'
+import type { ReactNode } from 'react'
+import type { InsightIconKind, InsightTone } from '../model/types'
+import { InsightIcon } from './InsightIcon'
 import styles from './InsightCard.module.css'
 
-export function InsightCard({ insight }: { insight: Insight }) {
+interface InsightCardProps {
+  icon: InsightIconKind
+  tone: InsightTone
+  label: string
+  time: string
+  title: string
+  summary: string
+  tag?: { text: string; tone: InsightTone }
+  sources?: string
+  status?: string
+  actions?: ReactNode
+}
+
+export function InsightCard({
+  icon,
+  tone,
+  label,
+  time,
+  title,
+  summary,
+  tag,
+  sources,
+  status,
+  actions,
+}: InsightCardProps) {
   return (
-    <Card className={styles.card}>
-      <div className={styles.meta}>
-        <Badge tone={insight.impact}>{impactLabels[insight.impact]}</Badge>
-        <span>
-          {insight.source} · {formatDate(insight.publishedAt)}
-        </span>
+    <article className={styles.card}>
+      <InsightIcon kind={icon} />
+      <div className={styles.body}>
+        <div className={styles.meta}>
+          <span className={styles.label} data-tone={tone}>
+            {label}
+          </span>
+          <span>{time}</span>
+        </div>
+        <h3 className={styles.title}>{title}</h3>
+        <p className={styles.summary}>{summary}</p>
+        <div className={styles.footer}>
+          {tag && (
+            <span className={styles.tag} data-tone={tag.tone}>
+              {tag.text}
+            </span>
+          )}
+          {sources && <span className={styles.sources}>{sources}</span>}
+          {status && <span className={styles.status}>· {status}</span>}
+          {actions && <div className={styles.actions}>{actions}</div>}
+        </div>
       </div>
-      <Link to={routes.insight(insight.id)} className={styles.title}>
-        {insight.title}
-      </Link>
-      <p className={styles.summary}>{insight.summary}</p>
-      {insight.effects.length > 0 && (
-        <ul className={styles.effects}>
-          {insight.effects.map((effect) => (
-            <li key={effect.metric}>
-              {metricLabels[effect.metric]}: <b>{formatPercent(effect.change)}</b>
-            </li>
-          ))}
-        </ul>
-      )}
-    </Card>
+    </article>
   )
 }

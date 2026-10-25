@@ -1,0 +1,27 @@
+.icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+}
+
+.icon[data-tone='red'] {
+  background: #fdeceb;
+  border-color: #f9d5d2;
+  color: #d4271b;
+}
+
+.icon[data-tone='blue'] {
+  background: #eaf2fb;
+  border-color: #d3e3f5;
+  color: #2f6db5;
+}
+
+.icon[data-tone='green'] {
+  background: #e9f5ee;
+  border-color: #d2eadb;
+  color: #2f8a55;
+}

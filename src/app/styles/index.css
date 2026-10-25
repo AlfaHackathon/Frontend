@@ -19,6 +19,9 @@
   --radius-l: 16px;
   --shadow-card: 0 1px 2px rgb(11 31 53 / 6%), 0 4px 16px rgb(11 31 53 / 4%);
   --content-width: 1200px;
+  --color-icon: #6e6e70;
+  --header-height: 64px;
+  --sidebar-width: 256px;
 
   font-family:
     Inter,

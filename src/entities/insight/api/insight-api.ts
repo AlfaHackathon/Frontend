@@ -5,7 +5,7 @@ import type { Insight, InsightDetails, InsightFilters } from '../model/types'
 export const insightApi = {
   getList: (filters: InsightFilters = {}) => {
     const params = new URLSearchParams()
-    if (filters.impact) params.set('impact', filters.impact)
+    if (filters.category) params.set('category', filters.category)
     const query = params.size ? `?${params}` : ''
     return apiClient.get<Insight[]>(`/insight-service/insights${query}`)
   },
