@@ -12,7 +12,7 @@ export function LoginForm() {
     mutationFn: sessionApi.login,
     onSuccess: (session) => {
       sessionStore.set(session)
-      navigate(routes.feed)
+      navigate(routes.bank)
     },
   })
 
@@ -36,6 +36,7 @@ export function LoginForm() {
         name="password"
         type="password"
         label="Пароль"
+        placeholder="••••••••"
         autoComplete="current-password"
         required
       />

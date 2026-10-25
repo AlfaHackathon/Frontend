@@ -1,0 +1,28 @@
+.page{position:relative;display:grid;grid-template-columns:1fr 1fr;min-height:100vh;overflow:hidden;background:radial-gradient(ellipse at 46% 47%,#fff7f4 10%,#fffaf8 70%,#fff 100%);color:#262930;font-family:Arial,Roboto,sans-serif}
+.background{position:absolute;top:0;left:0;width:1920px;height:1080px;max-width:none;pointer-events:none}
+.promo{position:relative;display:flex;flex-direction:column;min-height:100vh;padding:56px 72px}
+.brand{display:flex;align-items:center;gap:16px;width:max-content;color:#252930;text-decoration:none;font-size:28px;font-weight:700}
+.brandMark{display:grid;place-items:center;width:48px;height:48px;border-radius:13px;background:#ff3029;color:#fff;font-size:29px;font-weight:700;text-decoration:underline;text-underline-offset:4px}
+.promoBody{position:absolute;top:350px;left:72px;color:white}
+.promoBody h1{margin:0;font-size:61px;line-height:1.14;letter-spacing:-.02em;font-weight:700}
+.promoBody>p{margin:29px 0 57px;font-size:24px;line-height:1.25}
+.promoBody ol{display:flex;flex-direction:column;gap:30px;margin:0;padding:0;list-style:none}
+.promoBody li{display:flex;align-items:center;gap:20px;font-size:18px}
+.promoBody li span{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border-radius:50%;background:#fff2ed;color:#ed332d;font-size:15px}
+.tagline{position:absolute;left:72px;bottom:47px;margin:0;color:#62626a;font-size:16px}
+.formSide{position:relative;display:flex;justify-content:center;align-items:flex-start;padding-top:250px}
+.formSide{transform:translateX(clamp(0px,calc((1920px - 100vw)*.75),120px))}
+.loginCard{width:608px;height:544px;padding:64px;border-radius:24px;background:#fff}
+.loginCard h2{margin:0;font-size:40px;line-height:1.1;font-weight:700}
+.loginCard>p{margin:18px 0 30px;color:#838994;font-size:16px}
+.loginCard>p a{margin-left:5px;color:#ed3027;text-decoration:underline;text-underline-offset:3px}
+.loginCard form{gap:28px}
+.loginCard form>div{gap:6px}
+.loginCard form label{font-size:16px;font-weight:500;color:#414957}
+.loginCard form input{height:62px;border:0;border-radius:12px;background:#f2f3f5;color:#292d35;font-size:18px}
+.loginCard form input::placeholder{color:#89909d;opacity:1}
+.loginCard form button{height:62px;margin-top:0;border-radius:11px;background:#e92520;font-size:18px;font-weight:600}
+@media(max-width:1500px){.formSide{padding:220px 30px 0;transform:none}.loginCard{width:min(608px,100%)}.promoBody h1{font-size:52px}}
+@media(max-height:950px) and (min-width:761px){.tagline{bottom:31px}}
+@media(max-width:1150px){.promo{padding:40px}.promoBody{left:40px}.promoBody h1{font-size:44px}.promoBody>p{font-size:20px}.promoBody li{font-size:16px}.tagline{left:40px}.loginCard{padding:42px;height:auto}}
+@media(max-width:760px){.page{grid-template-columns:1fr}.background{display:none}.promo{min-height:96px;padding:24px}.promoBody,.tagline{display:none}.brand{font-size:22px}.formSide{min-height:calc(100vh - 96px);padding:24px;align-items:start}.loginCard{padding:30px}.loginCard h2{font-size:34px}}

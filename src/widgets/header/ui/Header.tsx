@@ -11,6 +11,7 @@ const navItems = [
   { to: routes.feed, label: 'Лента' },
   { to: routes.insights, label: 'Сводка' },
   { to: routes.company, label: 'Компания' },
+  { to: routes.chat, label: 'Ассистент' },
   { to: routes.howItWorks, label: 'Как это работает' },
 ]
 
@@ -21,11 +22,11 @@ export function Header() {
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
-        <Link to={routes.feed} className={styles.logo}>
+        <Link to={session ? routes.feed : routes.chat} className={styles.logo}>
           <Logo />
         </Link>
         <nav className={styles.nav}>
-          {navItems.map((item) => (
+          {(session ? navItems : navItems.filter((item) => item.to === routes.chat)).map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -38,7 +39,7 @@ export function Header() {
         </nav>
         <div className={styles.user}>
           {user && <span className={styles.name}>{getFullName(user)}</span>}
-          <LogoutButton />
+          {session && <LogoutButton />}
         </div>
       </div>
     </header>

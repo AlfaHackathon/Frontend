@@ -11,6 +11,6 @@ export function RequireAuth() {
 
 export function GuestOnly() {
   const session = useSession()
-  if (session) return <Navigate to={routes.feed} replace />
+  if (session) return <Navigate to={routes.bank} replace />
   return <Outlet />
 }

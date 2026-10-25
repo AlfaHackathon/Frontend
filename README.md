@@ -44,6 +44,7 @@ src/
 | 05-Как-сервис-учится           | `/how-it-works`  | `pages/how-it-works` |
 | 06-Разбор-инсайта              | `/insights/:id`  | `pages/insight`      |
 | 07b-Компания-вид-участника     | `/company`       | `pages/company`      |
+| Чат с ассистентом              | `/chat`          | `pages/chat`         |
 
 ## Договорённости
 
@@ -77,6 +78,12 @@ src/
 | CompanyService | `/company-service` | `entities/company`          |
 | InsightService | `/insight-service` | `entities/insight`          |
 | AgentService   | `/agent-service`   | `features/agent-chat` (SSE) |
+
+### Чат на Flue
+
+Страница `/chat` работает с `https://api.cheremha.ru/agent-service` через одноимённый локальный прокси Vite и rewrite Vercel. Список и создание чатов идут через REST; история, потоковые ответы, остановка генерации и вложения изображений/PDF — через `@flue/sdk` и `@flue/react`. Выбор источника ответа пока работает только в интерфейсе: отдельного параметра фильтра в текущем API нет.
+
+Для `/chat` не нужен вход через почту и пароль основного приложения: страница доступна напрямую и предлагает ввести JWT при отправке первого вопроса. Токен проверяется запросом к AgentService и хранится в `sessionStorage` только этой вкладки. Если приложение запущено с моковой авторизацией, тестовый токен входа не подойдёт — укажите настоящий JWT. Адрес сервиса можно переопределить через `VITE_AGENT_SERVICE_URL`.
 
 > Контракты, кроме UserService, пока предположительные — места помечены `TODO`.
 > Когда бэк опубликует ручки, правим типы в `entities/*/model/types.ts` и пути в `entities/*/api`.
