@@ -1,6 +1,6 @@
 import { delay, http, HttpResponse } from 'msw'
 import { env } from '@/shared/config'
-import { mockCompany, mockInsights, mockUser } from './data'
+import { mockCompany, mockGroup, mockInsights, mockMembers, mockUser } from './data'
 
 const api = (path: string) => `${env.apiUrl}${path}`
 const session = { token: 'mock-token', userId: mockUser.id }
@@ -17,7 +17,9 @@ export const handlers = [
 
   http.get(api('/user-service/users/:id'), () => HttpResponse.json(mockUser)),
 
-  http.get(api('/company-service/companies/my'), () => HttpResponse.json(mockCompany)),
+  http.get(api('/company-service/companies/me'), () => HttpResponse.json(mockCompany)),
+  http.get(api('/company-service/companies/me/members'), () => HttpResponse.json(mockMembers)),
+  http.get(api('/company-service/companies/me/group'), () => HttpResponse.json(mockGroup)),
 
   http.get(api('/insight-service/insights'), async ({ request }) => {
     await delay(300)
