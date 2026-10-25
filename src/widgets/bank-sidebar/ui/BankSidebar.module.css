@@ -52,6 +52,54 @@
   font-weight: 600;
 }
 
+.group {
+  position: relative;
+}
+
+.toggle {
+  position: absolute;
+  top: 12px;
+  right: 8px;
+  display: flex;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-icon);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.toggleOpen {
+  transform: rotate(180deg);
+}
+
+.submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 0 4px 40px;
+}
+
+.subitem {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: var(--radius-m);
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.subitem:hover {
+  background: rgb(255 255 255 / 60%);
+}
+
+.subActive {
+  background: #fdecea;
+  color: #d4271b;
+}
+
 .section {
   display: flex;
   align-items: center;

@@ -5,6 +5,7 @@ import { BankHomePage } from '@/pages/bank-home'
 import { FeedPage } from '@/pages/feed'
 import { HomePage } from '@/pages/home'
 import { InsightPage } from '@/pages/insight'
+import { NewsPage } from '@/pages/news'
 import { NotFoundPage } from '@/pages/not-found'
 import { routes } from '@/shared/config'
 import { MainLayout } from '../layouts/MainLayout'
@@ -19,6 +20,7 @@ export const router = createBrowserRouter([
       { path: routes.insight(':id'), element: <InsightPage /> },
       { path: routes.agent, element: <AgentPage /> },
       { path: routes.analytics, element: <AnalyticsPage /> },
+      { path: routes.news, element: <NewsPage /> },
     ],
   },
   { path: '*', element: <NotFoundPage /> },

@@ -1,3 +1,5 @@
+import { InsightFeed } from '@/widgets/insight-feed'
+
 export function FeedPage() {
-  return <div>Лента инсайтов</div>
+  return <InsightFeed />
 }
