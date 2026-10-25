@@ -12,15 +12,21 @@ export default defineConfig(({ mode }) => {
       alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
     },
     server: {
-      proxy: env.VITE_GATEWAY_URL
-        ? {
-            '/api': {
-              target: env.VITE_GATEWAY_URL,
-              changeOrigin: true,
-              rewrite: (path) => path.replace(/^\/api/, ''),
-            },
-          }
-        : undefined,
+      proxy: {
+        '/agent-service': {
+          target: 'https://api.cheremha.ru',
+          changeOrigin: true,
+        },
+        ...(env.VITE_GATEWAY_URL
+          ? {
+              '/api': {
+                target: env.VITE_GATEWAY_URL,
+                changeOrigin: true,
+                rewrite: (path: string) => path.replace(/^\/api/, ''),
+              },
+            }
+          : {}),
+      },
     },
   }
 })

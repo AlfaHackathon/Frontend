@@ -1,9 +1,15 @@
 export const routes = {
   bankHome: '/',
+  bank: '/',
   home: '/briefing',
+  briefing: '/briefing',
   feed: '/briefing/feed',
+  insights: '/briefing/feed',
   insight: (id: string) => `/briefing/insights/${id}`,
   agent: '/briefing/agent',
   analytics: '/briefing/analytics',
   news: '/briefing/news',
+  chat: '/chat',
+  chatById: (id: string) => `/chat/${encodeURIComponent(id)}`,
+  login: '/login',
 } as const

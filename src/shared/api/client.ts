@@ -12,25 +12,47 @@ export class ApiError extends Error {
   }
 }
 
+export class AgentApiError extends Error {
+  readonly status: number
+  readonly body: unknown
+
+  constructor(status: number, body: unknown) {
+    super(`AgentService error ${status}`)
+    this.status = status
+    this.body = body
+  }
+}
+
 type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
-export function buildHeaders(extra?: HeadersInit): Headers {
+export function buildHeaders(extra?: HeadersInit, tokenOverride?: string): Headers {
   const headers = new Headers(extra)
   headers.set('Content-Type', 'application/json')
-  const token = tokenStorage.get()
+  const token = tokenOverride ?? tokenStorage.get()
   if (token) headers.set('Authorization', `Bearer ${token}`)
   return headers
 }
 
-async function request<T>(method: Method, path: string, body?: unknown): Promise<T> {
-  const response = await fetch(`${env.apiUrl}${path}`, {
+async function request<T>(
+  method: Method,
+  path: string,
+  body?: unknown,
+  baseUrl = env.apiUrl,
+  token?: string,
+  agentService = false,
+): Promise<T> {
+  const response = await fetch(`${baseUrl}${path}`, {
     method,
-    headers: buildHeaders(),
+    headers: buildHeaders(undefined, token),
     body: body === undefined ? undefined : JSON.stringify(body),
   })
 
   const data: unknown = response.status === 204 ? null : await response.json().catch(() => null)
-  if (!response.ok) throw new ApiError(response.status, data)
+  if (!response.ok) {
+    throw agentService
+      ? new AgentApiError(response.status, data)
+      : new ApiError(response.status, data)
+  }
   return data as T
 }
 
@@ -40,4 +62,12 @@ export const apiClient = {
   put: <T>(path: string, body?: unknown) => request<T>('PUT', path, body),
   patch: <T>(path: string, body?: unknown) => request<T>('PATCH', path, body),
   delete: <T>(path: string) => request<T>('DELETE', path),
+}
+
+export const agentApiClient = {
+  get: <T>(path: string, token: string) => request<T>('GET', path, undefined, env.agentServiceUrl, token, true),
+  post: <T>(path: string, body: unknown, token: string) =>
+    request<T>('POST', path, body, env.agentServiceUrl, token, true),
+  patch: <T>(path: string, body: unknown, token: string) =>
+    request<T>('PATCH', path, body, env.agentServiceUrl, token, true),
 }
