@@ -10,3 +10,5 @@ export {
   type InsightMetric,
 } from './model/types'
 export { InsightCard } from './ui/InsightCard'
+export { CompactInsightCard } from './ui/CompactInsightCard'
+export { InsightIcon } from './ui/InsightIcon'
