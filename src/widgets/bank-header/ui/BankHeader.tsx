@@ -4,6 +4,9 @@ import { CalendarMIcon } from '@alfalab/icons-glyph/CalendarMIcon'
 import { DoorOpenMIcon } from '@alfalab/icons-glyph/DoorOpenMIcon'
 import { MagnifierMIcon } from '@alfalab/icons-glyph/MagnifierMIcon'
 import { MailMIcon } from '@alfalab/icons-glyph/MailMIcon'
+import { useCompanyGroup, useCompanyMembers, useMyCompany } from '@/entities/company'
+import { useSession } from '@/entities/session'
+import { useUser } from '@/entities/user'
 import { MegaphoneMIcon } from '@/shared/ui/icons'
 import styles from './BankHeader.module.css'
 
@@ -12,6 +15,13 @@ interface BankHeaderProps {
 }
 
 export function BankHeader({ onMenuClick }: BankHeaderProps) {
+  const session = useSession()
+  const { data: user } = useUser(session?.userId)
+  const { data: company } = useMyCompany(!!session)
+  const { data: group } = useCompanyGroup(!!session)
+  const { data: members } = useCompanyMembers(!!session)
+  const position = members?.find((member) => member.userId === session?.userId)?.position
+
   return (
     <header className={styles.header}>
       <div className={styles.brand}>
@@ -45,8 +55,10 @@ export function BankHeader({ onMenuClick }: BankHeaderProps) {
         <div className={styles.divider} />
 
         <div className={styles.company}>
-          <span className={styles.companyName}>ГК «Апельсин»</span>
-          <span className={styles.userName}>Алексей · Руководитель</span>
+          <span className={styles.companyName}>{group?.name ?? company?.name}</span>
+          <span className={styles.userName}>
+            {[user?.firstName, position].filter(Boolean).join(' · ')}
+          </span>
         </div>
         <button type="button" className={styles.iconButton} aria-label="Профиль компании">
           <BriefcaseGearMIcon />
