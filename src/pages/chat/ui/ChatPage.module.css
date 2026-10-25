@@ -17,10 +17,11 @@
 .allTab{display:flex;align-items:center;gap:11px;width:195px;padding:0 14px;background:#f6f7f9;color:#607084}
 .listGlyph{font-size:20px;line-height:1}
 .down{margin-left:auto;font-size:20px}
-.allMenu,.sourceMenu{position:absolute;z-index:4;min-width:240px;padding:7px;border:1px solid #e8ebef;border-radius:12px;background:#fff;box-shadow:0 14px 36px #1d28321c}
+.allMenu{position:absolute;z-index:4;min-width:240px;max-height:360px;overflow-y:auto;padding:7px;border:1px solid #e8ebef;border-radius:12px;background:#fff;box-shadow:0 14px 36px #1d28321c}
 .allMenu{right:0;top:50px}
-.allMenu button,.sourceMenu button{display:flex;align-items:center;justify-content:space-between;width:100%;height:auto;min-height:36px;padding:8px 10px;border:0;border-radius:7px;background:none;color:#425064;text-align:left;font:inherit;font-size:13px;cursor:pointer}
-.allMenu button:hover,.sourceMenu button:hover{background:#f5f6f8}
+.allMenu button{display:flex;align-items:center;justify-content:space-between;width:100%;height:auto;min-height:36px;padding:8px 10px;border:0;border-radius:7px;background:none;color:#425064;text-align:left;font:inherit;font-size:13px;cursor:pointer}
+.allMenu button:hover{background:#f5f6f8}
+.menuNotice{display:block;padding:9px 10px;color:#8794a5;font-size:13px}
 .landing{flex:1;min-height:0;overflow-y:auto}
 .landingInner{width:min(1100px,calc(100% - 64px));margin:0 auto;padding-top:123px}
 .welcome{text-align:center}
@@ -33,15 +34,6 @@
 .composer textarea::placeholder{color:#929daf;opacity:1}
 .composerActions{display:flex;align-items:center;gap:12px;margin-top:auto}
 .composerActions button{cursor:pointer}
-.visuallyHidden{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
-.attach{display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:13px;background:#f5f6f8;color:#66788d}
-.sourceWrap{position:relative}
-.source{display:flex;align-items:center;gap:9px;width:256px;height:32px;padding:0 11px;border:0;border-radius:11px;background:#f5f6f8;color:#65758a;font:inherit;font-size:12px}
-.source svg{flex:none}
-.sourceMenu{left:0;bottom:40px}
-.files{display:flex;gap:6px;max-width:100%;overflow-x:auto}
-.files span{display:flex;align-items:center;gap:6px;max-width:250px;padding:3px 7px;border-radius:7px;background:#f5f6f8;color:#596777;font-size:12px;white-space:nowrap}
-.files button{border:0;background:transparent;color:#8590a0;cursor:pointer}
 .send{display:grid;place-items:center;width:44px;height:44px;margin-left:auto;border:0;border-radius:14px;background:#f12b24;color:#fff}
 .send:disabled{opacity:1}
 .composerHint{margin:14px 0 0;color:#8d9aaa;text-align:right;font-size:11px;line-height:14px}

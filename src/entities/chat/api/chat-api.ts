@@ -2,13 +2,19 @@ import { agentApiClient } from '@/shared/api'
 
 export interface Chat {
   id: string
-  title?: string | null
-  archived?: boolean
-  createdAt?: string
-  updatedAt?: string
+  agentKey: 'client-assistant'
+  title: string
+  createdAt: string
+  updatedAt: string
+  archivedAt: string | null
 }
 
-type ChatListResponse = Chat[] | { items?: Chat[]; chats?: Chat[]; data?: Chat[] }
+export interface ChatPage {
+  items: Chat[]
+  nextCursor: string | null
+}
+
+export type ChatArchiveFilter = 'active' | 'archived' | 'all'
 
 export const chatApi = {
   async status(): Promise<'ready'> {
@@ -18,13 +24,10 @@ export const chatApi = {
     ])
     return 'ready'
   },
-  async list(token: string, archive: 'active' | 'archived' = 'active'): Promise<Chat[]> {
-    const result = await agentApiClient.get<ChatListResponse>(
-      `/chats?archive=${archive}&limit=20`,
-      token,
-    )
-    if (Array.isArray(result)) return result
-    return result.items ?? result.chats ?? result.data ?? []
+  list(token: string, archive: ChatArchiveFilter = 'active', cursor?: string): Promise<ChatPage> {
+    const query = new URLSearchParams({ archive, limit: '20' })
+    if (cursor) query.set('cursor', cursor)
+    return agentApiClient.get<ChatPage>(`/chats?${query}`, token)
   },
   get: (id: string, token: string) =>
     agentApiClient.get<Chat>(`/chats/${encodeURIComponent(id)}`, token),

@@ -1,1 +1,1 @@
-export { chatApi, type Chat } from './api/chat-api'
+export { chatApi, type Chat, type ChatPage, type ChatArchiveFilter } from './api/chat-api'

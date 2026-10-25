@@ -1,5 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
-  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/agent-service/:path*", "destination": "https://api.cheremha.ru/agent-service/:path*" },
+    { "source": "/((?!api/|agent-service/).*)", "destination": "/index.html" }
+  ]
 }
