@@ -2,19 +2,32 @@ import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '@/shared/api'
 import { env } from '@/shared/config'
 import { demoInsights } from '../model/demo-insights'
+import { toInsight, toPublicCategory, type PublicInsightFeed } from '../model/public-insight'
 import type { Insight, InsightDetails, InsightFilters } from '../model/types'
 
+const FEED_PAGE_LIMIT = 20
+const FEED_MAX_PAGES = 5
+
 export const insightApi = {
-  getList: (filters: InsightFilters = {}) => {
+  getList: async (filters: InsightFilters = {}) => {
     if (env.useMocks) {
       return Promise.resolve<Insight[]>(filters.category
         ? demoInsights.filter((insight) => insight.category === filters.category)
         : demoInsights)
     }
-    const params = new URLSearchParams()
-    if (filters.category) params.set('category', filters.category)
-    const query = params.size ? `?${params}` : ''
-    return apiClient.get<Insight[]>(`/insight-service/insights${query}`)
+    const items: Insight[] = []
+    let cursor: string | null = null
+    for (let page = 0; page < FEED_MAX_PAGES; page++) {
+      const params = new URLSearchParams({ kind: 'personal', limit: String(FEED_PAGE_LIMIT) })
+      const category = filters.category && toPublicCategory[filters.category]
+      if (category) params.set('category', category)
+      if (cursor) params.set('cursor', cursor)
+      const feed: PublicInsightFeed = await apiClient.get<PublicInsightFeed>(`/insight-service/insights?${params}`)
+      items.push(...feed.items.map(toInsight))
+      cursor = feed.nextCursor
+      if (!cursor || items.length >= FEED_PAGE_LIMIT) break
+    }
+    return items
   },
   getById: (id: string) => {
     if (env.useMocks) {
