@@ -10,6 +10,7 @@ import { BankShell } from '@/pages/bank/ui/BankShell'
 import { BankIcon } from '@/pages/bank/ui/BankIcon'
 import { ChatError } from './ChatError'
 import { env, routes } from '@/shared/config'
+import { SmoothText } from './SmoothText'
 import styles from './ChatPage.module.css'
 
 const TOKEN_KEY = 'alfa-briefing:agent-token'
@@ -125,7 +126,7 @@ function Conversation({ id, token, onAccess }: { id: string; token: string; onAc
       {chat.isError && <p className={styles.notice} role="alert">{errorMessage(chat.error)}</p>}
       {messages.map((message) => <div className={styles.message} data-role={message.role} key={message.id}>
         <span className={styles.avatar}>{message.role === 'assistant' ? <BankIcon name="bot" /> : 'А'}</span>
-        <div>{message.parts.filter((part) => part.type === 'text').map((part) => part.text).join('') || (message.role === 'assistant' ? 'Думаю…' : '')}</div>
+        <div>{message.role === 'assistant' ? <SmoothText text={message.parts.filter((part) => part.type === 'text').map((part) => part.text).join('')} streaming={busy && message.id === messages.at(-1)?.id} /> : message.parts.filter((part) => part.type === 'text').map((part) => part.text).join('')}{message.role === 'assistant' && !message.parts.some((part) => part.type === 'text' && part.text) && 'Думаю…'}</div>
       </div>)}
       {busy && messages.at(-1)?.role !== 'assistant' && <p className={styles.notice}>Агент думает…</p>}
       <div ref={bottomRef} />
