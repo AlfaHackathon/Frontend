@@ -1,0 +1,35 @@
+.root{display:grid;gap:24px;margin-top:16px}
+.state{margin:16px 0 0;color:#66717e;font-size:14px}
+.state button{margin-left:8px;border:0;background:none;color:#ef3124;font:inherit;cursor:pointer}
+.profileForm,.materialForm,.profileReadOnly{display:grid;gap:14px}
+.profileForm h3,.materialForm h3,.profileReadOnly h3,.materialsHeader h3,.reader h3{margin:0;font-size:17px;font-weight:650}
+.profileForm label,.materialForm label{display:grid;gap:7px;color:#606b79;font-size:14px;font-weight:500}
+.profileForm textarea,.materialForm textarea,.materialForm input{width:100%;padding:11px 13px;border:1px solid #dfe3e8;border-radius:9px;background:#f9fafb;color:#22252a;font:inherit;font-weight:400;resize:vertical}
+.profileForm textarea:focus,.materialForm textarea:focus,.materialForm input:focus{outline:2px solid #ef3124;outline-offset:1px}
+.sources{display:grid;gap:8px;margin:0;padding:12px 14px;border:1px solid #e2e5e9;border-radius:9px}
+.sources legend{padding:0 5px;color:#606b79;font-size:14px;font-weight:500}
+.sources .sourceChoice{display:flex;align-items:center;gap:9px;color:#333b45;font-weight:400}
+.sourceChoice input{accent-color:#ef3124}
+.primaryButton,.secondaryButton{justify-self:start;min-height:40px;padding:0 16px;border:0;border-radius:8px;background:#ef3124;color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.secondaryButton{border:1px solid #dfe3e8;background:#fff;color:#333b45}
+.primaryButton:disabled,.secondaryButton:disabled{opacity:.55;cursor:default}
+.error{margin:0;color:#b42318;font-size:14px}
+.muted{margin:0;color:#7b8490;font-size:14px}
+.profileReadOnly p{margin:0;white-space:pre-wrap;color:#333b45;font-size:14px;line-height:1.55}
+.profileReadOnly div{display:grid;gap:4px;font-size:14px}
+.profileReadOnly div strong{color:#606b79;font-weight:500}
+.materialsHeader{display:flex;align-items:center;gap:8px}
+.materialsHeader span{padding:2px 8px;border-radius:12px;background:#f2f3f5;color:#66717e;font-size:12px}
+.materialList{display:grid}
+.materialRow{display:flex;align-items:center;gap:14px;min-width:0;padding:13px 0;border-bottom:1px solid #edf0f2}
+.materialRow:first-child{padding-top:0}
+.materialRow>div{display:grid;gap:3px;min-width:0}
+.materialRow strong{overflow-wrap:anywhere;font-size:14px;font-weight:500}
+.materialRow small{color:#7b8490;font-size:12px}
+.materialRow button,.reader button{margin-left:auto;border:0;background:none;color:#b72b20;font:inherit;font-size:14px;cursor:pointer}
+.fileIcon{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:10px;background:#f1f2f5;color:#8a929d}
+.reader{display:grid;gap:12px;padding:16px;border:1px solid #e2e5e9;border-radius:10px;background:#f9fafb}
+.reader>div{display:flex;align-items:center;gap:10px}
+.reader button{font-size:22px;line-height:1}
+.materialText{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.6}
+.materialForm{padding-top:20px;border-top:1px solid #edf0f2}

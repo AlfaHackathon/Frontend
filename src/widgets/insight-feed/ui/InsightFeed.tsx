@@ -16,7 +16,7 @@ type Tab = InsightCategory | 'all'
 export function InsightFeed() {
   const navigate = useNavigate()
   const [category, setCategory] = useState<Tab>('all')
-  const { data: insights = [] } = useInsights()
+  const { data: insights = [], isPending, isError, refetch } = useInsights()
 
   const tabs: FilterTab<Tab>[] = [
     { value: 'all', label: 'Все', count: insights.length },
@@ -33,6 +33,8 @@ export function InsightFeed() {
   return (
     <section className={styles.feed}>
       <InsightFilter tabs={tabs} value={category} onChange={setCategory} pending={pending} />
+      {isPending && <p role="status" className={styles.state}>Загружаем инсайты…</p>}
+      {isError && <div role="alert" className={styles.state}>Не удалось загрузить инсайты. <button type="button" onClick={() => void refetch()}>Повторить</button></div>}
       <div className={styles.list}>
         {items.map((item) => (
           <InsightCard

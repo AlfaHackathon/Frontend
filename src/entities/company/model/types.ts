@@ -1,6 +1,7 @@
 export interface Company {
   id: string
   name: string
+  isCreator: boolean
 }
 
 export interface CompanyMember {

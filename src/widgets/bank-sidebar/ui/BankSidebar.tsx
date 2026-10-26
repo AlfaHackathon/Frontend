@@ -37,7 +37,6 @@ const bankItems: MenuItem[] = [
 const briefingItems = [
   { label: 'Спросить агента', to: routes.chat },
   { label: 'Инсайты', to: routes.feed },
-  { label: 'Новости', to: routes.news },
 ]
 
 const serviceItems: MenuItem[] = [

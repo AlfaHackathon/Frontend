@@ -10,6 +10,24 @@
   gap: 16px;
 }
 
+.state {
+  margin: 0;
+  padding: 20px 24px;
+  border-radius: 16px;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+}
+
+.state button {
+  margin-left: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-accent);
+  font: inherit;
+  cursor: pointer;
+}
+
 .more {
   height: 44px;
   border-radius: 12px;

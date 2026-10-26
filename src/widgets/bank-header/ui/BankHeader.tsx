@@ -5,12 +5,11 @@ import { DoorOpenMIcon } from '@alfalab/icons-glyph/DoorOpenMIcon'
 import { MagnifierMIcon } from '@alfalab/icons-glyph/MagnifierMIcon'
 import { MailMIcon } from '@alfalab/icons-glyph/MailMIcon'
 import { useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { useMyCompany } from '@/entities/company'
 import { sessionStore, useSession } from '@/entities/session'
 import { getFullName, useUser } from '@/entities/user'
 import { ApiError } from '@/shared/api'
-import { MegaphoneMIcon } from '@/shared/ui/icons'
 import { routes } from '@/shared/config'
 import styles from './BankHeader.module.css'
 
@@ -57,9 +56,6 @@ export function BankHeader({ onMenuClick }: BankHeaderProps) {
           <button type="button" className={styles.iconButton} aria-label="Письма">
             <MailMIcon />
           </button>
-          <button type="button" className={styles.iconButton} aria-label="Новости">
-            <MegaphoneMIcon />
-          </button>
         </div>
 
         <div className={styles.divider} />
@@ -68,9 +64,9 @@ export function BankHeader({ onMenuClick }: BankHeaderProps) {
           <span className={styles.companyName}>{companyName}</span>
           <span className={styles.userName}>{userName}</span>
         </div>
-        <button type="button" className={styles.iconButton} aria-label="Профиль компании">
+        <Link to={routes.company} className={styles.iconButton} aria-label="Профиль компании" title="Профиль компании">
           <BriefcaseGearMIcon />
-        </button>
+        </Link>
 
         <div className={styles.divider} />
 

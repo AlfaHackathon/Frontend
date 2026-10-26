@@ -92,7 +92,8 @@ src/
 ### Моки
 
 - Включаются переменной `VITE_USE_MOCKS=true` (см. `.env.development`, `.env.production`).
-- Хендлеры — `src/app/mocks/handlers.ts`, данные — `src/app/mocks/data.ts`.
+- Инсайты в этом режиме читаются напрямую из `src/entities/insight/model/demo-insights.ts`; их показ не зависит от регистрации Service Worker.
+- Хендлеры MSW — `src/app/mocks/handlers.ts`.
 - AuthService и UserService не подменяются моками; остальные хендлеры остаются для демонстрационных данных.
 
 ### Работа с живым бэком локально

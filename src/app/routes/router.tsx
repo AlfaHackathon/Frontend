@@ -3,10 +3,10 @@ import { AnalyticsPage } from '@/pages/analytics'
 import { BankPage } from '@/pages/bank'
 import { BriefingHomePage } from '@/pages/briefing-home'
 import { ChatPage } from '@/pages/chat'
+import { CompanyPage } from '@/pages/company'
 import { FeedPage } from '@/pages/feed'
 import { InsightPage } from '@/pages/insight'
 import { LoginPage } from '@/pages/login'
-import { NewsPage } from '@/pages/news'
 import { NotFoundPage } from '@/pages/not-found'
 import { routes } from '@/shared/config'
 import { MainLayout } from '../layouts/MainLayout'
@@ -20,6 +20,7 @@ export const router = createBrowserRouter([
       { path: routes.bankHome, element: <BankPage /> },
       { path: '/alfa-business', element: <BankPage /> },
       { path: routes.home, element: <BriefingHomePage /> },
+      { path: routes.company, element: <CompanyPage /> },
       { path: routes.chat, element: <ChatPage /> },
       { path: `${routes.chat}/:id`, element: <ChatPage /> },
       {
@@ -29,7 +30,6 @@ export const router = createBrowserRouter([
           { path: routes.insight(':id'), element: <InsightPage /> },
           { path: routes.agent, element: <Navigate to={routes.chat} replace /> },
           { path: routes.analytics, element: <AnalyticsPage /> },
-          { path: routes.news, element: <NewsPage /> },
         ],
       },
     ],
