@@ -1,5 +1,5 @@
-.backdrop { position: fixed; inset: 0; z-index: 40; background: rgb(11 31 53 / 25%); }
-.panel { position: absolute; top: 0; right: 0; display: flex; flex-direction: column; width: min(558px, 100%); height: 100%; background: #fff; color: #303640; font-family: Inter, Arial, sans-serif; box-shadow: -10px 0 30px rgb(11 31 53 / 12%); }
+.backdrop { position: fixed; inset: 0; z-index: 40; background: rgb(11 31 53 / 25%); animation: backdropIn 240ms ease-out both; }
+.panel { position: absolute; top: 0; right: 0; display: flex; flex-direction: column; width: min(558px, 100%); height: 100%; background: #fff; color: #303640; font-family: Inter, Arial, sans-serif; box-shadow: -10px 0 30px rgb(11 31 53 / 12%); animation: panelIn 280ms cubic-bezier(.2, .8, .2, 1) both; }
 .panel header { display: flex; justify-content: space-between; gap: 16px; padding: 20px 24px 18px; border-bottom: 1px solid #eceef1; }
 .panel h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 20px; font-weight: 600; }
 .panel h2 svg { color: #f12b24; }
@@ -34,4 +34,7 @@
 .composerHint { margin: 10px 0 0; color: #8d9aaa; text-align: right; font-size: 11px; line-height: 14px; }
 .error { margin: 10px 24px; color: #bb302b; font-size: 13px; }
 .composerWrap .error { margin: 10px 0 0; }
+@keyframes backdropIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes panelIn { from { transform: translateX(36px); } to { transform: translateX(0); } }
+@media (prefers-reduced-motion: reduce) { .backdrop, .panel { animation: none; } }
 @media (max-width: 560px) { .panel header { padding: 16px; } .content { padding: 16px; } .composerWrap { padding: 0 16px 16px; } .composer { padding: 15px 16px; } .message { max-width: 100%; } }
