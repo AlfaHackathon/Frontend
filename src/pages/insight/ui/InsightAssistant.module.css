@@ -1,0 +1,25 @@
+.backdrop { position: fixed; inset: 0; z-index: 40; background: rgb(11 31 53 / 25%); }
+.panel { position: absolute; top: 0; right: 0; display: flex; flex-direction: column; width: min(558px, 100%); height: 100%; background: white; box-shadow: -10px 0 30px rgb(11 31 53 / 12%); }
+.panel header { display: flex; justify-content: space-between; gap: 16px; padding: 20px 24px 18px; border-bottom: 1px solid #e7eaed; }
+.panel h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 20px; }
+.panel header p { margin: 4px 0 0; color: #73808b; font-size: 13px; }
+.panel header button { display: grid; place-items: center; flex: 0 0 40px; height: 40px; border: 0; border-radius: 8px; background: transparent; cursor: pointer; }
+.panel header button:hover { background: #f2f3f5; }
+.content { flex: 1; overflow: auto; padding: 16px 24px; }
+.context { margin: 0 0 16px; color: #6d7985; font-size: 13px; line-height: 1.45; }
+.suggestions { display: flex; flex-wrap: wrap; gap: 8px; }
+.suggestions button { padding: 9px 13px; border: 1px solid #e3e7ea; border-radius: 9px; background: white; color: #27384b; font: inherit; font-size: 13px; cursor: pointer; }
+.suggestions button:disabled { color: #929ba4; cursor: not-allowed; }
+.empty { display: grid; justify-items: center; padding: 70px 24px; color: #8b95a0; text-align: center; }
+.empty h3 { margin: 15px 0 5px; color: #24384b; font-size: 18px; }
+.empty p { max-width: 350px; margin: 0; font-size: 14px; line-height: 1.5; }
+.messages { display: grid; align-content: start; gap: 12px; margin-top: 20px; }
+.message { max-width: 90%; padding: 13px 15px; border-radius: 12px; background: #f2f4f6; font-size: 14px; white-space: pre-wrap; }
+.message[data-role='user'] { justify-self: end; background: #eef2ff; }
+.composer { padding: 16px 24px 20px; border-top: 1px solid #e7eaed; }
+.composer > div { display: flex; height: 48px; border: 1px solid #dce1e5; border-radius: 10px; }
+.composer input { flex: 1; min-width: 0; padding: 0 14px; border: 0; outline: none; background: transparent; font: inherit; font-size: 14px; }
+.composer button { display: grid; place-items: center; width: 44px; border: 0; border-radius: 0 9px 9px 0; background: #ef3124; color: white; cursor: pointer; }
+.composer button:disabled { background: #dde1e5; cursor: not-allowed; }
+.composer small { display: block; margin-top: 6px; color: #929ca5; font-size: 11px; }
+.error { color: #d3271b; font-size: 13px; }

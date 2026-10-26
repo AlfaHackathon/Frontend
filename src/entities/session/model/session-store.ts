@@ -1,13 +1,13 @@
 import { useSyncExternalStore } from 'react'
 import { tokenStorage } from '@/shared/api'
+import { userIdFromAccessToken } from './access-token'
 import type { Session } from './types'
 
 const listeners = new Set<() => void>()
-const USER_KEY = 'alfa-briefing:user-id'
 
 function readSession(): Session | null {
   const token = tokenStorage.get()
-  const userId = localStorage.getItem(USER_KEY)
+  const userId = token && userIdFromAccessToken(token)
   return token && userId ? { token, userId } : null
 }
 
@@ -21,12 +21,18 @@ function emit() {
 export const sessionStore = {
   set(session: Session) {
     tokenStorage.set(session.token)
-    localStorage.setItem(USER_KEY, session.userId)
     emit()
   },
   clear() {
     tokenStorage.clear()
-    localStorage.removeItem(USER_KEY)
+    localStorage.removeItem('alfa-briefing:user-id')
+    sessionStorage.removeItem('alfa-briefing:pending-question')
+    for (let index = sessionStorage.length - 1; index >= 0; index--) {
+      const key = sessionStorage.key(index)
+      if (key?.startsWith('alfa-briefing:agent-token:') || key?.startsWith('alfa-briefing:pending-send:')) {
+        sessionStorage.removeItem(key)
+      }
+    }
     emit()
   },
   subscribe(listener: () => void) {

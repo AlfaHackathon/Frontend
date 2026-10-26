@@ -12,6 +12,9 @@ export interface RegisterPayload extends LoginCredentials {
   lastName: string
   firstName: string
   middleName?: string
-  companyName?: string
-  inviteToken?: string
+}
+
+export interface TokenPair {
+  accessToken: string
+  refreshToken: string
 }

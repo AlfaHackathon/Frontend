@@ -4,10 +4,13 @@ import { CalendarMIcon } from '@alfalab/icons-glyph/CalendarMIcon'
 import { DoorOpenMIcon } from '@alfalab/icons-glyph/DoorOpenMIcon'
 import { MagnifierMIcon } from '@alfalab/icons-glyph/MagnifierMIcon'
 import { MailMIcon } from '@alfalab/icons-glyph/MailMIcon'
-import { useCompanyGroup, useCompanyMembers, useMyCompany } from '@/entities/company'
-import { useSession } from '@/entities/session'
-import { useUser } from '@/entities/user'
-import { MegaphoneMIcon } from '@/shared/ui/icons'
+import { useQueryClient } from '@tanstack/react-query'
+import { Link, useNavigate } from 'react-router'
+import { useMyCompany } from '@/entities/company'
+import { sessionStore, useSession } from '@/entities/session'
+import { getFullName, useUser } from '@/entities/user'
+import { ApiError } from '@/shared/api'
+import { routes } from '@/shared/config'
 import styles from './BankHeader.module.css'
 
 interface BankHeaderProps {
@@ -16,11 +19,17 @@ interface BankHeaderProps {
 
 export function BankHeader({ onMenuClick }: BankHeaderProps) {
   const session = useSession()
-  const { data: user } = useUser(session?.userId)
-  const { data: company } = useMyCompany(!!session)
-  const { data: group } = useCompanyGroup(!!session)
-  const { data: members } = useCompanyMembers(!!session)
-  const position = members?.find((member) => member.userId === session?.userId)?.position
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const userQuery = useUser(session?.userId)
+  const companyQuery = useMyCompany(!!session)
+  const user = userQuery.data
+  const company = companyQuery.data
+  const companyName = company?.name ?? (companyQuery.error instanceof ApiError && companyQuery.error.status === 404
+    ? 'Компания не привязана'
+    : companyQuery.isError ? 'Компания недоступна' : '')
+  const userName = user ? [getFullName(user), user.roleName].filter(Boolean).join(' · ')
+    : userQuery.isError ? 'Профиль недоступен' : ''
 
   return (
     <header className={styles.header}>
@@ -47,26 +56,25 @@ export function BankHeader({ onMenuClick }: BankHeaderProps) {
           <button type="button" className={styles.iconButton} aria-label="Письма">
             <MailMIcon />
           </button>
-          <button type="button" className={styles.iconButton} aria-label="Новости">
-            <MegaphoneMIcon />
-          </button>
         </div>
 
         <div className={styles.divider} />
 
         <div className={styles.company}>
-          <span className={styles.companyName}>{group?.name ?? company?.name}</span>
-          <span className={styles.userName}>
-            {[user?.firstName, position].filter(Boolean).join(' · ')}
-          </span>
+          <span className={styles.companyName}>{companyName}</span>
+          <span className={styles.userName}>{userName}</span>
         </div>
-        <button type="button" className={styles.iconButton} aria-label="Профиль компании">
+        <Link to={routes.company} className={styles.iconButton} aria-label="Профиль компании" title="Профиль компании">
           <BriefcaseGearMIcon />
-        </button>
+        </Link>
 
         <div className={styles.divider} />
 
-        <button type="button" className={styles.iconButton} aria-label="Выйти">
+        <button type="button" className={styles.iconButton} aria-label="Выйти" onClick={() => {
+          sessionStore.clear()
+          queryClient.clear()
+          navigate(routes.login, { replace: true })
+        }}>
           <DoorOpenMIcon />
         </button>
       </div>

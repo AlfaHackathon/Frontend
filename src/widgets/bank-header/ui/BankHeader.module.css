@@ -90,6 +90,7 @@
   background: transparent;
   color: var(--color-icon);
   cursor: pointer;
+  text-decoration: none;
 }
 
 .iconButton:hover {

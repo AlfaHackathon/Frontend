@@ -23,6 +23,32 @@ export interface Insight {
 export interface InsightDetails extends Insight {
   analysis: string
   recommendations: string[]
+  detail?: InsightBreakdown
+}
+
+export interface InsightBreakdown {
+  owner: string
+  updatedAt: string
+  lead: string
+  impact: {
+    description: string
+    baselineLabel: string
+    stressLabel: string
+    rows: { metric: string; baseline: string; stress: string; reason: string }[]
+  }
+  evidence: { source: string; finding: string }[]
+  risks: string[]
+  opportunities: string[]
+  decisions: string[]
+  bankView: {
+    description: string
+    quote: string
+    source: string
+    market: string
+    company: string
+  }
+  sources: { kind: string; origin: string; title: string }[]
+  related?: { id: string; title: string }[]
 }
 
 export interface InsightFilters {

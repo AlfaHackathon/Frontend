@@ -12,12 +12,3 @@ export function AccountsMIcon(props: IconProps) {
     </svg>
   )
 }
-
-
-export function MegaphoneMIcon(props: IconProps) {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" {...props}>
-      <path d="M19 4.5v15l-7.5-3.75H9.6l1.15 4.25H8.2l-1.3-4.33A3.5 3.5 0 0 1 3 12.25v-.5A3.5 3.5 0 0 1 6.5 8.25h5L19 4.5Zm1.5 5.25a2.5 2.5 0 0 1 0 4.5v-4.5Z" />
-    </svg>
-  )
-}

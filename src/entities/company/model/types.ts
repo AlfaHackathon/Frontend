@@ -1,15 +1,17 @@
 export interface Company {
   id: string
   name: string
+  isCreator: boolean
 }
 
 export interface CompanyMember {
   userId: string
-  fullName: string
-  position: string
+  joinedAt: string
+  isCreator: boolean
 }
 
 export interface CompanyGroup {
-  groupId: string
-  name: string
+  current: Company
+  parent: Company | null
+  children: Company[]
 }

@@ -2,7 +2,7 @@
 .hero time{color:#8b8e93;font-size:14px}
 .hero h1{margin:14px 0 9px;font-size:40px;line-height:1.1;font-weight:700}
 .hero p{margin:0;color:#828995;font-size:18px}
-.actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:34px;max-width:1366px}
+.actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-top:34px;max-width:900px}
 .action{position:relative;display:flex;flex-direction:column;justify-content:flex-start;height:142px;padding:16px;border-radius:17px;background:#fff;color:#202124;text-decoration:none;font-size:20px;font-weight:400}
 .action>span:last-child{margin-top:11px}
 .action:hover,.insight:hover,.resumeButton:hover{box-shadow:0 10px 28px #22222218}

@@ -8,8 +8,8 @@ export const routes = {
   insight: (id: string) => `/briefing/insights/${id}`,
   agent: '/briefing/agent',
   analytics: '/briefing/analytics',
-  news: '/briefing/news',
   chat: '/chat',
   chatById: (id: string) => `/chat/${encodeURIComponent(id)}`,
+  company: '/company',
   login: '/login',
 } as const

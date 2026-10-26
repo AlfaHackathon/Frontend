@@ -1,4 +1,4 @@
-type IconName = 'plusCircle' | 'arrows' | 'import' | 'statement' | 'accounts' | 'people' | 'briefing' | 'calculator' | 'wallet' | 'cards' | 'documents' | 'crest' | 'cart' | 'search' | 'calendar' | 'mail' | 'bell' | 'settings' | 'logout' | 'template' | 'receipt' | 'oneC' | 'invoice' | 'globe' | 'bot' | 'grid' | 'news' | 'percent' | 'chat' | 'chevronRight'
+type IconName = 'plusCircle' | 'arrows' | 'import' | 'statement' | 'accounts' | 'people' | 'briefing' | 'calculator' | 'wallet' | 'cards' | 'documents' | 'crest' | 'cart' | 'search' | 'calendar' | 'mail' | 'bell' | 'settings' | 'logout' | 'template' | 'receipt' | 'oneC' | 'invoice' | 'globe' | 'bot' | 'grid' | 'percent' | 'chat' | 'chevronRight'
 
 const exportedIcons = import.meta.glob('../../../assets/figma-icons/*.svg', {
   eager: true,

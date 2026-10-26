@@ -17,15 +17,11 @@ export default defineConfig(({ mode }) => {
           target: 'https://api.cheremha.ru',
           changeOrigin: true,
         },
-        ...(env.VITE_GATEWAY_URL
-          ? {
-              '/api': {
-                target: env.VITE_GATEWAY_URL,
-                changeOrigin: true,
-                rewrite: (path: string) => path.replace(/^\/api/, ''),
-              },
-            }
-          : {}),
+        '/api': {
+          target: env.VITE_GATEWAY_URL || 'https://api.cheremha.ru',
+          changeOrigin: true,
+          rewrite: (path: string) => path.replace(/^\/api/, ''),
+        },
       },
     },
   }

@@ -40,10 +40,11 @@ async function request<T>(
   baseUrl = env.apiUrl,
   token?: string,
   agentService = false,
+  extraHeaders?: HeadersInit,
 ): Promise<T> {
   const response = await fetch(`${baseUrl}${path}`, {
     method,
-    headers: buildHeaders(undefined, token),
+    headers: buildHeaders(extraHeaders, token),
     body: body === undefined ? undefined : JSON.stringify(body),
   })
 
@@ -58,10 +59,15 @@ async function request<T>(
 
 export const apiClient = {
   get: <T>(path: string) => request<T>('GET', path),
-  post: <T>(path: string, body?: unknown) => request<T>('POST', path, body),
-  put: <T>(path: string, body?: unknown) => request<T>('PUT', path, body),
+  post: <T>(path: string, body?: unknown, headers?: HeadersInit) => request<T>('POST', path, body, env.apiUrl, undefined, false, headers),
+  put: <T>(path: string, body?: unknown, headers?: HeadersInit) => request<T>('PUT', path, body, env.apiUrl, undefined, false, headers),
   patch: <T>(path: string, body?: unknown) => request<T>('PATCH', path, body),
   delete: <T>(path: string) => request<T>('DELETE', path),
+}
+
+// Login and registration must not send a stale access token to AuthGateway.
+export const authApiClient = {
+  post: <T>(path: string, body: unknown) => request<T>('POST', path, body, env.apiUrl, ''),
 }
 
 export const agentApiClient = {

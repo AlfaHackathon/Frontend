@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router'
 import { sessionApi, sessionStore } from '@/entities/session'
+import { ApiError } from '@/shared/api'
 import { routes } from '@/shared/config'
 import { Button, Input } from '@/shared/ui'
 import styles from './LoginForm.module.css'
@@ -40,7 +41,9 @@ export function LoginForm() {
         autoComplete="current-password"
         required
       />
-      {login.isError && <p className={styles.error}>Неверная почта или пароль</p>}
+      {login.isError && <p className={styles.error} role="alert">{login.error instanceof ApiError && login.error.status === 401
+        ? 'Неверная почта или пароль'
+        : 'Не удалось войти. Попробуйте ещё раз позже.'}</p>}
       <Button type="submit" fullWidth disabled={login.isPending}>
         {login.isPending ? 'Входим…' : 'Войти'}
       </Button>
