@@ -6,14 +6,15 @@ export type InsightIconKind = 'risk' | 'credit-risk' | 'rate' | 'growth' | 'pric
 
 export interface Insight {
   id: string
-  category: InsightCategory
+  kind?: 'personal' | 'general'
+  category: InsightCategory | null
   icon: InsightIconKind
   tone: InsightTone
   label: string
   time: string
   title: string
   summary: string
-  tag: { text: string; tone: InsightTone }
+  tag?: { text: string; tone: InsightTone }
   sources: string
   status: string
   pending: boolean
