@@ -7,6 +7,8 @@ export type InsightIconKind = 'risk' | 'credit-risk' | 'rate' | 'growth' | 'pric
 export interface Insight {
   id: string
   kind?: 'personal' | 'general'
+  newsMaterialId?: string
+  revisionCreatedAt?: string
   category: InsightCategory | null
   icon: InsightIconKind
   tone: InsightTone
@@ -24,6 +26,9 @@ export interface Insight {
 export interface InsightDetails extends Insight {
   analysis: string
   recommendations: string[]
+  importance?: { score: number | null; rationale: string }
+  indicators?: { value: string; unit: string | null; period: string | null; baselinePeriod: string | null; arithmeticOnly: boolean }[]
+  sourceDetails?: { title: string; sourceUrl: string | null }[]
   detail?: InsightBreakdown
 }
 

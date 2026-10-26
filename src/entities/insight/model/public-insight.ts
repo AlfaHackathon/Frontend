@@ -1,4 +1,4 @@
-import type { Insight, InsightCategory, InsightIconKind, InsightTone } from './types'
+import type { Insight, InsightCategory, InsightDetails, InsightIconKind, InsightTone } from './types'
 
 type PublicCategory = 'risk' | 'opportunity' | 'event'
 
@@ -11,10 +11,14 @@ interface PublicInsightIndicator {
   value: string | null
   unit: string | null
   period: string | null
+  baselinePeriod: string | null
+  evidenceStatus: string | null
+  arithmeticOnly: boolean | null
 }
 
 interface PublicInsightBase {
   id: string
+  newsMaterialId: string | null
   sources: PublicInsightSource[] | null
   indicators: PublicInsightIndicator[] | null
   requiresReassessment: boolean | null
@@ -43,7 +47,7 @@ export interface PublicGeneralInsight extends PublicInsightBase {
 export type PublicInsight = PublicPersonalInsight | PublicGeneralInsight
 
 export interface PublicInsightFeed {
-  items: PublicInsight[]
+  items: PublicInsight[] | null
   nextCursor: string | null
   exhaustive: boolean
 }
@@ -101,6 +105,8 @@ export function toInsight(item: PublicInsight): Insight {
   return {
     id: item.id,
     kind: item.kind,
+    newsMaterialId: item.newsMaterialId ?? undefined,
+    revisionCreatedAt: revision?.createdAt,
     category: meta.category,
     icon: meta.icon,
     tone: meta.tone,
@@ -118,5 +124,31 @@ export function toInsight(item: PublicInsight): Insight {
     status: item.requiresReassessment ? 'Требует переоценки' : '',
     pending: false,
     questions: [],
+  }
+}
+
+export function toInsightDetails(item: PublicInsight): InsightDetails {
+  const insight = toInsight(item)
+  const conclusion = item.kind === 'personal' ? item.currentRevision?.conclusion : item.insight?.conclusion
+  return {
+    ...insight,
+    analysis: conclusion ?? insight.summary,
+    recommendations: [],
+    importance: item.kind === 'personal' && item.currentRevision.companyImportance
+      ? { score: item.currentRevision.companyImportance.score, rationale: item.currentRevision.companyImportance.rationale }
+      : undefined,
+    indicators: (item.indicators ?? [])
+      .filter((indicator) => indicator.evidenceStatus === 'supported' && typeof indicator.value === 'string' && /^-?\d+(?:\.\d+)?$/.test(indicator.value))
+      .map((indicator) => ({
+        value: indicator.value!,
+        unit: indicator.unit,
+        period: indicator.period,
+        baselinePeriod: indicator.baselinePeriod,
+        arithmeticOnly: indicator.arithmeticOnly === true,
+      })),
+    sourceDetails: (item.sources ?? []).map((source, index) => ({
+      title: source.title?.trim() || `Источник ${index + 1}`,
+      sourceUrl: source.provenance?.sourceUrl ?? null,
+    })),
   }
 }

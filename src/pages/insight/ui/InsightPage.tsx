@@ -1,13 +1,11 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { ArrowLeft, Check, MessageCircle, Sparkles } from 'lucide-react'
 import { useInsight, type InsightDetails } from '@/entities/insight'
+import { useSession } from '@/entities/session'
 import { routes } from '@/shared/config'
-import { InsightAssistant, type InsightAssistantTransport } from './InsightAssistant'
+import { InsightAssistant } from './InsightAssistant'
 import styles from './InsightPage.module.css'
-
-// Supply an insight-aware transport here when the assistant API is available.
-const assistantTransport: InsightAssistantTransport | undefined = undefined
 
 function DetailedContent({ insight }: { insight: InsightDetails }) {
   const detail = insight.detail!
@@ -68,16 +66,38 @@ function Feedback() {
 }
 
 function OtherDetail({ insight }: { insight: InsightDetails }) {
+  const sources = insight.sourceDetails ?? []
   return <div className={styles.otherDetail}>
-    <section className={styles.card}><h2>О разборе</h2><p>{insight.analysis || insight.summary}</p>{insight.recommendations.length > 0 && <><h3>Варианты решений</h3><ul>{insight.recommendations.map((item) => <li key={item}>{item}</li>)}</ul></>}</section>
-    <aside className={styles.railCard}><h2>Источники</h2><p>{insight.sources}</p></aside>
+    <div className={styles.sections}>
+      <section className={styles.card}><h2>О разборе</h2><p>{insight.analysis || insight.summary}</p>{insight.recommendations.length > 0 && <><h3>Варианты решений</h3><ul>{insight.recommendations.map((item) => <li key={item}>{item}</li>)}</ul></>}</section>
+      {insight.indicators && insight.indicators.length > 0 && <section className={styles.card}><h2>Влияние на показатели</h2>{insight.indicators.map((indicator, index) => <div className={styles.indicator} key={index}><span>Подтверждённый расчётный показатель</span><strong>{formatIndicator(indicator.value, indicator.unit)}</strong>{indicator.period && <span>Период: {indicator.period}</span>}{indicator.baselinePeriod && <span>Базовый период: {indicator.baselinePeriod}</span>}{indicator.arithmeticOnly && <small>Расчёт по сохранённым условиям; фактическую оплату не подтверждает.</small>}</div>)}</section>}
+      {insight.importance && <section className={styles.card}><h2>Важность для компании</h2>{insight.importance.score !== null && <strong className={styles.importanceScore}>{insight.importance.score} из 5</strong>}{insight.importance.rationale && <p>{insight.importance.rationale}</p>}</section>}
+    </div>
+    <aside className={styles.railCard}><h2>Источники</h2>{sources.length > 0 ? sources.map((source, index) => <div className={styles.source} key={`${source.title}-${index}`}><strong>{source.title}</strong>{safeSourceUrl(source.sourceUrl) && <a href={safeSourceUrl(source.sourceUrl)!} target="_blank" rel="noopener noreferrer">Открыть источник ↗</a>}</div>) : <p>Ссылки на источники не указаны.</p>}</aside>
   </div>
 }
 
+function formatIndicator(value: string, unit: string | null): string {
+  const [integer, fraction] = value.split('.')
+  const grouped = integer.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+  return `${grouped}${fraction ? `,${fraction}` : ''}${unit ? ` ${unit === 'RUB' ? '₽' : unit}` : ''}`
+}
+
+function safeSourceUrl(value: string | null): string | null {
+  if (!value) return null
+  try {
+    const url = new URL(value)
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : null
+  } catch { return null }
+}
+
 export function InsightPage() {
-  const { id = '' } = useParams<{ id: string }>()
-  const { data: insight, isPending, isError, refetch } = useInsight(id)
+  const session = useSession()
+  const { id = '', kind } = useParams<{ id: string; kind: string }>()
+  const { data: insight, isPending, isError, refetch } = useInsight(id, kind === 'personal' || kind === 'general' ? kind : undefined)
   const [assistantOpen, setAssistantOpen] = useState(false)
+  const refreshInsight = useCallback(() => { void refetch() }, [refetch])
+  const token = sessionStorage.getItem(`alfa-briefing:agent-token:${session?.userId ?? 'anonymous'}`) || session?.token || ''
 
   if (isPending) return <div className={styles.state} role="status">Загружаем разбор инсайта…</div>
   if (isError || !insight) return <div className={styles.state} role="alert"><h1>Не удалось открыть инсайт</h1><p>Проверьте ссылку или попробуйте ещё раз.</p><button type="button" onClick={() => void refetch()}>Повторить</button><Link to={routes.feed}>К списку инсайтов</Link></div>
@@ -86,6 +106,6 @@ export function InsightPage() {
     <div className={styles.toolbar}><div><Link className={styles.back} to={routes.feed}><ArrowLeft size={18} />Все инсайты</Link><h1>Разбор инсайта</h1></div><span className={styles.toolbarStatus}>Брифинг <span>·</span> Инсайты</span></div>
     <div className={styles.hero}><div className={styles.meta}><span className={styles.severity} data-tone={insight.tone}>● {insight.label}</span><span>{insight.detail ? `Ответственный: ${insight.detail.owner} · ${insight.detail.updatedAt}` : insight.time}</span></div><div className={styles.heroHeading}><h2>{insight.title}</h2><button type="button" className={styles.askButton} onClick={() => setAssistantOpen(true)}><MessageCircle size={18} />Спросить по инсайту <span aria-hidden="true">→</span></button></div><p>{insight.detail?.lead ?? insight.summary}</p></div>
     {insight.detail ? <DetailedContent key={insight.id} insight={insight} /> : <OtherDetail insight={insight} />}
-    {assistantOpen && <InsightAssistant insight={insight} transport={assistantTransport} onClose={() => setAssistantOpen(false)} />}
+    {assistantOpen && session && <InsightAssistant key={`${insight.kind}:${insight.id}:${insight.revisionCreatedAt ?? 'current'}`} insight={insight} token={token} userId={session.userId} onClose={() => setAssistantOpen(false)} onRefresh={refreshInsight} />}
   </div>
 }

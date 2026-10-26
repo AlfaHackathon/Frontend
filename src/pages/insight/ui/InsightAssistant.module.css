@@ -23,3 +23,5 @@
 .composer button:disabled { background: #dde1e5; cursor: not-allowed; }
 .composer small { display: block; margin-top: 6px; color: #929ca5; font-size: 11px; }
 .error { color: #d3271b; font-size: 13px; }
+.notice { color: #73808b; font-size: 13px; }
+.stop { margin-top: 10px; padding: 7px 10px; border: 1px solid #dce1e5; border-radius: 8px; background: white; color: #27384b; font: inherit; font-size: 12px; cursor: pointer; }

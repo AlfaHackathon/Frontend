@@ -3,9 +3,10 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 import { useFlueAgent } from '@flue/react'
 import { createFlueClient } from '@flue/sdk'
 import { Link, useLocation, useNavigate, useParams } from 'react-router'
-import { ArrowRight, ArrowUp, FileText, LayoutGrid, List, MessageSquareText, Sparkles } from 'lucide-react'
+import { ArrowRight, ArrowUp, FileText, LayoutGrid, List, MessageSquareText, Sparkles, X } from 'lucide-react'
 import { chatApi, type Chat, type ChatArchiveFilter } from '@/entities/chat'
 import { useSession } from '@/entities/session'
+import { useUser } from '@/entities/user'
 import { BankShell } from '@/pages/bank/ui/BankShell'
 import { BankIcon } from '@/pages/bank/ui/BankIcon'
 import { ChatError } from './ChatError'
@@ -144,6 +145,7 @@ export function ChatPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const session = useSession()
+  const { data: user } = useUser(session?.userId)
   const tokenKey = `${TOKEN_KEY}:${session?.userId ?? 'anonymous'}`
   const [customToken, setCustomToken] = useState(() => sessionStorage.getItem(tokenKey) ?? '')
   const [tokenDraft, setTokenDraft] = useState(customToken)
@@ -153,6 +155,7 @@ export function ChatPage() {
   const [archiveFilter, setArchiveFilter] = useState<ChatArchiveFilter>('active')
   const [error, setError] = useState<string | null>(null)
   const [connecting, setConnecting] = useState(false)
+  const [updatingChatId, setUpdatingChatId] = useState<string | null>(null)
   const token = customToken || session?.token || ''
   useEffect(() => {
     const saved = sessionStorage.getItem(tokenKey) ?? ''
@@ -175,18 +178,27 @@ export function ChatPage() {
   const chats = list.data?.pages.flatMap((page) => page.items) ?? []
 
   async function updateChat(chat: Chat, action: 'rename' | 'archive') {
+    if (updatingChatId) return
     try {
       if (action === 'rename') {
         const title = window.prompt('Название диалога', chat.title)?.trim()
         if (!title || title === chat.title) return
+        setUpdatingChatId(chat.id)
         await chatApi.rename(chat.id, title.slice(0, 200), token)
       } else {
+        setUpdatingChatId(chat.id)
         const archived = !chat.archivedAt
         await chatApi.archive(chat.id, archived, token)
-        if (archived && id === chat.id) navigate(routes.chat)
+        if (archived && id === chat.id) {
+          const pending = readPendingQuestion()
+          if (pending?.chatId === chat.id) sessionStorage.removeItem(PENDING_KEY)
+          sessionStorage.removeItem(`${SEND_KEY_PREFIX}${chat.id}`)
+          navigate(routes.chat)
+        }
       }
       await queryClient.invalidateQueries({ queryKey: ['chats'] })
     } catch (cause) { setError(errorMessage(cause)) }
+    finally { setUpdatingChatId(null) }
   }
 
   async function start(question = '') {
@@ -226,7 +238,10 @@ export function ChatPage() {
       <span className={styles.toolbarLabel}>Диалоги</span>
       <div className={styles.dialogTabs} role="group" aria-label="Диалоги">
         <button className={`${styles.newTab} ${!id ? styles.selectedTab : ''}`} type="button" onClick={() => navigate(routes.chat)}><span>＋</span>Новый диалог</button>
-        {visibleTabs.map((chat) => <button className={`${styles.dialogTab} ${id === chat.id ? styles.selectedTab : ''}`} type="button" key={chat.id} onClick={() => navigate(routes.chatById(chat.id))}><MessageSquareText size={16} strokeWidth={1.8} />{chatTitle(chat)}</button>)}
+        {visibleTabs.map((chat) => <div className={`${styles.dialogTabWrap} ${id === chat.id ? styles.selectedTab : ''}`} key={chat.id}>
+          <button className={styles.dialogTab} type="button" onClick={() => navigate(routes.chatById(chat.id))}><MessageSquareText size={16} strokeWidth={1.8} /><span>{chatTitle(chat)}</span></button>
+          {!chat.archivedAt && <button className={styles.dialogTabClose} type="button" aria-label={`Убрать ${chatTitle(chat)} в архив`} title="Убрать в архив" disabled={updatingChatId === chat.id} onClick={() => void updateChat(chat, 'archive')}><X size={16} strokeWidth={1.8} /></button>}
+        </div>)}
         <div className={styles.allWrap}><button className={styles.allTab} type="button" aria-expanded={allOpen} onClick={() => setAllOpen((open) => !open)}><List size={18} strokeWidth={1.8} />Все диалоги<span className={styles.down}>⌄</span></button>
           {allOpen && <div className={styles.allMenu} role="menu" aria-label="Все диалоги">
             <div className={styles.filterRow} role="group" aria-label="Фильтр диалогов">
@@ -248,7 +263,7 @@ export function ChatPage() {
       </div>
     </div>
     {id && token ? <Conversation key={`${id}:${token}`} id={id} token={token} onAccess={() => { setTokenDraft(customToken); setAccessOpen(true) }} /> : <div className={styles.landing}><div className={styles.landingInner}>
-      <div className={styles.welcome}><h1>Что разберём сегодня, Алексей?</h1><p>Помогу связать события с задачами вашего бизнеса.</p></div>
+      <div className={styles.welcome}><h1>Что разберём сегодня{user?.firstName ? `, ${user.firstName}` : ''}?</h1><p>Помогу связать события с задачами вашего бизнеса.</p></div>
       {!token && <button className={styles.connectButton} type="button" onClick={() => setAccessOpen(true)}>Подключить AgentService</button>}
       <Composer value={draft} setValue={setDraft} send={() => void start(draft)} disabled={create.isPending} />
       <div className={styles.promptArea}><div className={styles.promptHeading}>МОЖНО НАЧАТЬ С ЭТОГО</div>
