@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import styles from './SmoothText.module.css'
 
 const TICK_MS = 20
 
@@ -20,5 +23,14 @@ export function SmoothText({ text, streaming }: { text: string; streaming: boole
     return () => clearInterval(timer)
   }, [behind, streaming])
 
-  return <>{text.slice(0, shown)}</>
+  return (
+    <div className={styles.markdown}>
+      <Markdown
+        remarkPlugins={[remarkGfm]}
+        components={{ a: ({ node: _node, ...props }) => <a {...props} target="_blank" rel="noreferrer" /> }}
+      >
+        {text.slice(0, shown)}
+      </Markdown>
+    </div>
+  )
 }
