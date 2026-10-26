@@ -8,9 +8,12 @@
 .dialogTabs button{height:44px;flex:none;border:0;border-radius:13px;font:inherit;font-size:13px;white-space:nowrap;cursor:pointer}
 .newTab{display:flex;align-items:center;gap:11px;width:170px;padding:0 15px;background:#fff1ee;color:#f12b24}
 .newTab span{font-size:23px;line-height:1}
-.dialogTab{display:flex;align-items:center;gap:11px;width:282px;padding:0 14px;overflow:hidden;background:#f6f7f9;color:#607084;text-align:left;text-overflow:ellipsis}
-.dialogTab:nth-of-type(3){width:274px}
-.dialogTab:nth-of-type(4){width:244px}
+.dialogTabWrap{display:flex;align-items:center;flex:none;width:282px;border-radius:13px;background:#f6f7f9;color:#607084}
+.dialogTabWrap .dialogTab{display:flex;align-items:center;gap:11px;flex:1;min-width:0;padding:0 0 0 14px;overflow:hidden;background:transparent;color:inherit;text-align:left}
+.dialogTab span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dialogTabWrap .dialogTabClose{display:grid;place-items:center;flex:none;width:30px;height:30px;margin-right:6px;padding:0;background:transparent;color:inherit}
+.dialogTabWrap .dialogTabClose:hover{background:#e5e9ef}
+.dialogTabClose:disabled{opacity:.45;cursor:wait}
 .dialogTab svg{width:16px;height:16px;flex:none}
 .dialogTabs .selectedTab{background:#fff1ee;color:#f12b24}
 .allWrap{position:relative;flex:none}
@@ -82,7 +85,7 @@
 .accessDialog>button:last-child:disabled{opacity:.6}
 .accessError{color:#bb302b!important}
 .accessClose{position:absolute;right:18px;top:14px;border:0;background:transparent;color:#8791a0;font-size:25px;cursor:pointer}
-@media(max-width:1500px){.toolbar{margin-left:36px}.dialogTabs{gap:8px}.dialogTab{width:220px}.dialogTab:nth-of-type(3){width:195px}.dialogTab:nth-of-type(4){width:205px}.landingInner{padding-top:clamp(65px,12vh,123px)}}
+@media(max-width:1500px){.toolbar{margin-left:36px}.dialogTabs{gap:8px}.dialogTabWrap{width:220px}.landingInner{padding-top:clamp(65px,12vh,123px)}}
 @media(max-width:1050px){.toolbar{margin:0 22px;height:76px}.back{flex-basis:105px}.toolbarLabel{flex-basis:74px}.landingInner{width:calc(100% - 48px)}.welcome h1{font-size:30px}.prompts{gap:9px}.prompt{padding:15px 12px}.prompt strong{font-size:13px}.prompt small{font-size:11px}}
 @media(max-width:760px){.toolbar{margin:0 15px}.toolbarLabel{display:none}.landingInner{padding-top:50px}.welcome h1{font-size:26px;line-height:32px}.welcome p{font-size:14px}.composer{height:150px}.composer textarea{font-size:15px}.promptArea{margin:20px 0}.prompts{grid-template-columns:1fr}.prompt{height:95px}.thread{width:calc(100% - 30px)}}
 .dialogTabs .dialogTab,.dialogTabs .dialogTabWrap{flex:0 1 282px;width:auto;min-width:110px}

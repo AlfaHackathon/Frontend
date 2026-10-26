@@ -16,7 +16,7 @@ type Tab = InsightCategory | 'all'
 export function InsightFeed() {
   const navigate = useNavigate()
   const [category, setCategory] = useState<Tab>('all')
-  const { data: insights = [], isPending, isError, refetch } = useInsights()
+  const { data: insights = [], isPending, isError, isSuccess, refetch } = useInsights()
 
   const tabs: FilterTab<Tab>[] = [
     { value: 'all', label: 'Все', count: insights.length },
@@ -35,6 +35,7 @@ export function InsightFeed() {
       <InsightFilter tabs={tabs} value={category} onChange={setCategory} pending={pending} />
       {isPending && <p role="status" className={styles.state}>Загружаем инсайты…</p>}
       {isError && <div role="alert" className={styles.state}>Не удалось загрузить инсайты. <button type="button" onClick={() => void refetch()}>Повторить</button></div>}
+      {isSuccess && items.length === 0 && <p className={styles.state}>{category === 'all' ? 'Для вашей компании пока нет инсайтов.' : 'В этой категории пока нет инсайтов.'}</p>}
       <div className={styles.list}>
         {items.map((item) => (
           <InsightCard
@@ -49,7 +50,7 @@ export function InsightFeed() {
             sources={item.sources}
             status={item.status}
             actions={
-              <Button className={styles.more} onClick={() => navigate(routes.insight(item.id))}>
+              <Button className={styles.more} onClick={() => navigate(routes.insight(item.id, item.kind))}>
                 Подробнее
               </Button>
             }

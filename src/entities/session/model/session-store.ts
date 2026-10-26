@@ -29,7 +29,7 @@ export const sessionStore = {
     sessionStorage.removeItem('alfa-briefing:pending-question')
     for (let index = sessionStorage.length - 1; index >= 0; index--) {
       const key = sessionStorage.key(index)
-      if (key?.startsWith('alfa-briefing:agent-token:') || key?.startsWith('alfa-briefing:pending-send:')) {
+      if (key?.startsWith('alfa-briefing:agent-token:') || key?.startsWith('alfa-briefing:pending-send:') || key?.startsWith('alfa-briefing:insight-chat:')) {
         sessionStorage.removeItem(key)
       }
     }
