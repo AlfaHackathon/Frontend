@@ -33,3 +33,7 @@
   border-radius: 12px;
   font-size: 16px;
 }
+
+.loadMore {
+  align-self: center;
+}

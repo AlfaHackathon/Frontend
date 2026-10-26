@@ -1,4 +1,4 @@
-export { insightApi, insightKeys, useInsight, useInsights } from './api/insight-api'
+export { insightApi, insightKeys, sortInsights, useInfiniteInsights, useInsight, useInsights } from './api/insight-api'
 export {
   categoryLabels,
   type Insight,
