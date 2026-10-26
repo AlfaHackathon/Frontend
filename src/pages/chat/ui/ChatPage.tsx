@@ -8,6 +8,7 @@ import { chatApi, type Chat, type ChatArchiveFilter } from '@/entities/chat'
 import { useSession } from '@/entities/session'
 import { BankShell } from '@/pages/bank/ui/BankShell'
 import { BankIcon } from '@/pages/bank/ui/BankIcon'
+import { ChatError } from './ChatError'
 import { env, routes } from '@/shared/config'
 import styles from './ChatPage.module.css'
 
@@ -50,6 +51,7 @@ function idempotencyKeyFor(chatId: string, question: string): string {
 function errorMessage(error: unknown): string {
   if (error && typeof error === 'object' && 'status' in error) {
     if (error.status === 401 || error.status === 403) return 'Нужен действующий JWT с доступом к AgentService.'
+    if (Number(error.status) >= 500) return `Агент сейчас недоступен (ошибка ${error.status}). Попробуйте ещё раз через минуту.`
     return `Сервис вернул ошибку ${error.status}. Попробуйте ещё раз.`
   }
   return error instanceof Error ? error.message : 'Не удалось выполнить запрос.'
@@ -129,7 +131,7 @@ function Conversation({ id, token, onAccess }: { id: string; token: string; onAc
       <div ref={bottomRef} />
     </div>
     {chat.data?.archivedAt && <p className={styles.archivedNotice}>Диалог в архиве. Восстановите его через «Все диалоги», чтобы продолжить.</p>}
-    {(error || agent.error) && <p className={styles.error} role="alert">{error || errorMessage(agent.error)}</p>}
+    {(error || agent.error) && <ChatError message={error || errorMessage(agent.error)} />}
     {(isAuthError(chat.error) || isAuthError(agent.error)) && <button className={styles.reconnectButton} type="button" onClick={onAccess}>Указать другой JWT</button>}
     <Composer value={draft} setValue={setDraft} send={() => void send()} busy={busy} stop={() => void client.abort()} disabled={!agent.historyReady || !chat.data || Boolean(chat.data.archivedAt)} />
   </div>
@@ -252,7 +254,7 @@ export function ChatPage() {
         <div className={styles.prompts}>{suggestions.map((item) => <button className={styles.prompt} type="button" key={item.title} onClick={() => void start(item.title)}><item.Icon size={20} strokeWidth={1.8} /><ArrowRight className={styles.promptArrow} size={18} strokeWidth={1.8} /><strong>{item.title}</strong><small>{item.detail}</small></button>)}</div>
       </div>
     </div></div>}
-    {error && <p className={styles.error} role="alert">{error}</p>}
+    {error && <ChatError message={error} />}
     {accessOpen && <div className={styles.accessBackdrop} onMouseDown={(event) => { if (event.target === event.currentTarget) setAccessOpen(false) }}><form className={styles.accessDialog} onSubmit={submitToken}>
       <button className={styles.accessClose} type="button" aria-label="Закрыть" onClick={() => setAccessOpen(false)}>×</button>
       <h2>Подключить Агента</h2><p>Укажите JWT вашего пользователя с доступом к AgentService.</p><label htmlFor="agent-token">JWT пользователя</label>
