@@ -34,7 +34,7 @@ export function BriefingHomePage() {
       {isError && <p className={styles.feedState} role="alert">Не удалось загрузить инсайты. <button type="button" onClick={() => void refetch()}>Повторить</button></p>}
       {!isPending && !isError && latest.length === 0 && <p className={styles.feedState}>Для вашей компании пока нет инсайтов.</p>}
       <div className={styles.insightGrid}>
-        {latest.map((insight) => <Link className={styles.insight} to={routes.insight(insight.id, insight.kind)} key={insight.id}>
+        {latest.map((insight) => <Link className={styles.insight} to={routes.insight(insight.id, insight.kind)} key={`${insight.kind ?? 'personal'}:${insight.id}`}>
           <div className={styles.insightMeta}><span style={{ color: toneColors[insight.tone] }}><i style={{ background: toneColors[insight.tone] }} />{insight.label}</span><time>{insight.time}</time></div>
           <h3>{insight.title}</h3>
           <p>{insight.summary}</p>

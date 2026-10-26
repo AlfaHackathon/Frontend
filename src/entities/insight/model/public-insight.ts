@@ -181,6 +181,7 @@ export function toInsight(item: PublicInsight): Insight {
     tone: meta.tone,
     label: [meta.label, importance].filter(Boolean).join(' · '),
     time: formatTime(revision ? revision.createdAt : 'updatedAt' in item ? item.updatedAt : null),
+    sortAt: revision ? revision.createdAt : 'updatedAt' in item ? item.updatedAt : undefined,
     title:
       generalTitle ??
       indicatorTitle(item.indicators?.[0], revision?.question?.mechanism) ??

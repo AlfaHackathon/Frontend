@@ -14,6 +14,7 @@ export interface Insight {
   tone: InsightTone
   label: string
   time: string
+  sortAt?: string
   title: string
   summary: string
   tag?: { text: string; tone: InsightTone }

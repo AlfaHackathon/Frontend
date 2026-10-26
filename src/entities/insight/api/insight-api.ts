@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { apiClient } from '@/shared/api'
 import { env } from '@/shared/config'
 import { demoInsights } from '../model/demo-insights'
@@ -6,36 +6,54 @@ import { toInsight, toInsightDetails, toPublicCategory, type PublicInsight, type
 import type { Insight, InsightDetails, InsightFilters } from '../model/types'
 
 const FEED_PAGE_LIMIT = 20
-const FEED_MAX_PAGES = 5
+type InsightKind = 'personal' | 'general'
+
+interface InsightPage {
+  items: Insight[]
+  nextCursor: string | null
+}
+
+export function sortInsights(items: Insight[]): Insight[] {
+  return [...items].sort((a, b) => {
+    const aTime = Date.parse(a.sortAt ?? '') || 0
+    const bTime = Date.parse(b.sortAt ?? '') || 0
+    return bTime - aTime
+  })
+}
 
 export const insightApi = {
-  getList: async (filters: InsightFilters = {}) => {
+  getPage: async (kind: InsightKind, filters: InsightFilters = {}, cursor?: string): Promise<InsightPage> => {
     if (env.useMocks) {
-      return Promise.resolve<Insight[]>(filters.category
-        ? demoInsights.filter((insight) => insight.category === filters.category)
-        : demoInsights)
+      return {
+        items: demoInsights.filter((insight) =>
+          (insight.kind ?? 'personal') === kind && (!filters.category || insight.category === filters.category)),
+        nextCursor: null,
+      }
     }
-    const items: Insight[] = []
-    let cursor: string | null = null
-    for (let page = 0; page < FEED_MAX_PAGES; page++) {
-      const params = new URLSearchParams({ kind: 'personal', limit: String(FEED_PAGE_LIMIT) })
-      const category = filters.category && toPublicCategory[filters.category]
-      if (category) params.set('category', category)
-      if (cursor) params.set('cursor', cursor)
-      const feed: PublicInsightFeed = await apiClient.get<PublicInsightFeed>(`/insight-service/insights?${params}`)
-      items.push(...(feed.items ?? []).map(toInsight))
-      cursor = feed.nextCursor
-      if (!cursor || items.length >= FEED_PAGE_LIMIT) break
+    const params = new URLSearchParams({ kind, limit: String(FEED_PAGE_LIMIT) })
+    const category = filters.category && toPublicCategory[filters.category]
+    if (category) params.set('category', category)
+    if (cursor) params.set('cursor', cursor)
+    const feed: PublicInsightFeed = await apiClient.get<PublicInsightFeed>(`/insight-service/insights?${params}`)
+    return {
+      items: (feed.items ?? []).map(toInsight),
+      nextCursor: feed.nextCursor || null,
     }
-    return items
   },
-  getById: async (id: string, kind?: 'personal' | 'general'): Promise<InsightDetails> => {
+  getList: async (filters: InsightFilters = {}): Promise<Insight[]> => {
+    const [personal, general] = await Promise.all([
+      insightApi.getPage('personal', filters),
+      insightApi.getPage('general', filters),
+    ])
+    return sortInsights([...personal.items, ...general.items])
+  },
+  getById: async (id: string, kind?: InsightKind): Promise<InsightDetails> => {
     if (env.useMocks) {
       const insight = demoInsights.find((item) => item.id === id)
       if (!insight) throw new Error('Инсайт не найден')
       return insight
     }
-    const getCard = (cardKind: 'personal' | 'general') =>
+    const getCard = (cardKind: InsightKind) =>
       apiClient.get<PublicInsight>(`/insight-service/insights/${cardKind}/${encodeURIComponent(id)}`)
     if (kind) return toInsightDetails(await getCard(kind))
     try {
@@ -50,11 +68,20 @@ export const insightApi = {
 export const insightKeys = {
   all: ['insight'] as const,
   list: (filters: InsightFilters) => [...insightKeys.all, 'list', filters] as const,
-  details: (id: string, kind?: 'personal' | 'general') => [...insightKeys.all, 'details', kind, id] as const,
+  feed: (kind: InsightKind, filters: InsightFilters) => [...insightKeys.all, 'feed', kind, filters] as const,
+  details: (id: string, kind?: InsightKind) => [...insightKeys.all, 'details', kind, id] as const,
 }
 
 export const useInsights = (filters: InsightFilters = {}) =>
   useQuery({ queryKey: insightKeys.list(filters), queryFn: () => insightApi.getList(filters) })
 
-export const useInsight = (id: string, kind?: 'personal' | 'general') =>
+export const useInfiniteInsights = (kind: InsightKind, filters: InsightFilters = {}) =>
+  useInfiniteQuery({
+    queryKey: insightKeys.feed(kind, filters),
+    queryFn: ({ pageParam }) => insightApi.getPage(kind, filters, pageParam),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (page) => page.nextCursor ?? undefined,
+  })
+
+export const useInsight = (id: string, kind?: InsightKind) =>
   useQuery({ queryKey: insightKeys.details(id, kind), queryFn: () => insightApi.getById(id, kind) })
