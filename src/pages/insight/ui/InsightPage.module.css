@@ -72,6 +72,12 @@
 .relatedLink:hover { color: #ef3124; }
 .otherDetail { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; }
 .otherDetail p { line-height: 1.55; }
+.indicator { display: grid; gap: 7px; margin-top: 18px; }
+.indicator strong { font-size: 30px; line-height: 1.2; }
+.indicator span, .indicator small { color: #687584; font-size: 13px; }
+.importanceScore { display: block; margin-top: 14px; color: #27384b; font-size: 24px; }
+.source a { width: fit-content; color: #d3271b; font-size: 13px; text-decoration: none; }
+.source a:hover { text-decoration: underline; }
 .state { padding: 40px; border-radius: 16px; background: white; }
 .state button { margin-right: 20px; padding: 10px 16px; border: 0; border-radius: 8px; background: #ef3124; color: white; cursor: pointer; }
 @media (max-width: 1100px) { .detailGrid, .otherDetail { grid-template-columns: 1fr; } .rail { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

@@ -27,7 +27,8 @@ export const router = createBrowserRouter([
         element: <MainLayout />,
         children: [
           { path: routes.feed, element: <FeedPage /> },
-          { path: routes.insight(':id'), element: <InsightPage /> },
+          { path: routes.insightPattern, element: <InsightPage /> },
+          { path: routes.legacyInsightPattern, element: <InsightPage /> },
           { path: routes.agent, element: <Navigate to={routes.chat} replace /> },
           { path: routes.analytics, element: <AnalyticsPage /> },
         ],
