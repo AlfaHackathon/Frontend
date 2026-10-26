@@ -44,10 +44,15 @@
 }
 
 .summary {
+  display: -webkit-box;
   margin: 14px 0 0;
+  overflow: hidden;
   font-size: 15px;
   line-height: 1.4;
   color: var(--color-text-secondary);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .footer {
