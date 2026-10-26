@@ -7,6 +7,7 @@
 .outlineButton{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;min-height:44px;padding:0 18px;border:1px solid #dfe3e8;border-radius:10px;background:#fff;color:#22252a;font-size:14px;font-weight:500;text-decoration:none;white-space:nowrap}
 .outlineButton:hover{background:#f6f7f9}
 .columns{display:grid;grid-template-columns:minmax(0,1fr) 300px;align-items:start;gap:16px;margin-top:16px}
+.columns.columnsSingle{grid-template-columns:minmax(0,1fr)}
 .primary{display:grid;gap:16px;min-width:0}
 .card,.sourcesCard{border:1px solid #e9ebef;border-radius:15px;background:#fff;box-shadow:0 2px 10px rgb(17 33 55 / 3%)}
 .card{padding:24px}
@@ -28,6 +29,10 @@
 .managerName span{font-weight:500;color:#7b8490}
 .managerRole,.documentInfo p,.managerInfo p{margin:1px 0 0;color:#7b8490;font-size:13px;line-height:1.45}
 .managerInfo p{margin-top:3px}
+.memberState{margin:16px 0 0;color:#66717e;font-size:14px}
+.memberState button{padding:0;border:0;background:none;color:#d9231d;font:inherit;cursor:pointer}
+.memberState button:hover{text-decoration:underline}
+.memberBadge{flex-shrink:0;margin-left:auto;padding:5px 9px;border-radius:7px;background:#fff1ee;color:#d9231d;font-size:12px;font-weight:600}
 .outlineButton{margin-left:auto}
 .fileIcon{display:grid;place-items:center;position:relative;flex:0 0 45px;width:45px;height:45px;border-radius:11px;background:#f1f2f5;color:#8a929d}
 .fileIcon small{position:absolute;bottom:4px;font-size:7px;font-weight:700;letter-spacing:.03em}
