@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useFlueAgent } from '@flue/react'
 import { createFlueClient } from '@flue/sdk'
-import { ArrowRight, Bot, X } from 'lucide-react'
+import { ArrowUp, Bot, X } from 'lucide-react'
 import { chatApi } from '@/entities/chat'
 import type { InsightDetails } from '@/entities/insight'
+import { BankIcon } from '@/pages/bank/ui/BankIcon'
 import { env } from '@/shared/config'
+import { SmoothText } from '@/shared/ui/smooth-text/SmoothText'
 import styles from './InsightAssistant.module.css'
 
 function errorMessage(error: unknown): string {
@@ -71,25 +73,43 @@ function Conversation({ insight, token, chatId, onRefresh }: {
     }
   }
 
+  function handleComposerKeyDown(event: ReactKeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault()
+      void ask(question)
+    }
+  }
+
   return <>
     <div className={styles.content}>
       <p className={styles.context}>Инсайт: {insight.title}</p>
       <div className={styles.suggestions}>{suggestions.map((suggestion) => <button key={suggestion} type="button" disabled={!agent.historyReady || !chat.data || Boolean(chat.data.archivedAt) || busy} onClick={() => void ask(suggestion)}>{suggestion}</button>)}</div>
       <div className={styles.messages} aria-live="polite" aria-label="Сообщения помощника">
         {!agent.historyReady && <p className={styles.notice}>Загружаем диалог…</p>}
-        {messages.map((message) => <div className={styles.message} data-role={message.role} key={message.id}>{message.parts.filter((part) => part.type === 'text').map((part) => part.text).join('') || (message.role === 'assistant' ? 'Думаю…' : '')}</div>)}
+        {messages.map((message) => {
+          const text = message.parts.filter((part) => part.type === 'text').map((part) => part.text).join('')
+          return <div className={styles.message} data-role={message.role} key={message.id}>
+            <span className={styles.avatar}>{message.role === 'assistant' ? <BankIcon name="bot" /> : 'А'}</span>
+            <div className={styles.messageBody}>{message.role === 'assistant' ? text ? <SmoothText text={text} streaming={busy && message.id === messages.at(-1)?.id} /> : 'Думаю…' : text}</div>
+          </div>
+        })}
         {busy && messages.at(-1)?.role !== 'assistant' && <p className={styles.notice}>Помощник готовит ответ…</p>}
         <div ref={bottomRef} />
       </div>
     </div>
     {chat.data?.archivedAt && <p className={styles.error}>Этот диалог в архиве. Восстановите его в разделе «Диалоги».</p>}
     {(chat.isError || agent.error) && <p role="alert" className={styles.error}>{errorMessage(chat.error ?? agent.error)}</p>}
-    <form className={styles.composer} onSubmit={(event: FormEvent<HTMLFormElement>) => { event.preventDefault(); void ask(question) }}>
-      <div><input aria-label="Уточняющий вопрос" value={question} maxLength={32000} onChange={(event) => setQuestion(event.target.value)} placeholder="Задайте уточняющий вопрос…" disabled={!agent.historyReady || !chat.data || Boolean(chat.data.archivedAt) || busy} /><button type="submit" aria-label="Отправить вопрос" disabled={!question.trim() || !agent.historyReady || !chat.data || Boolean(chat.data.archivedAt) || busy}><ArrowRight size={22} /></button></div>
-      {busy && <button className={styles.stop} type="button" onClick={() => void client.abort()}>Остановить ответ</button>}
+    <div className={styles.composerWrap}>
+      <div className={styles.composer}>
+        <textarea aria-label="Уточняющий вопрос" value={question} maxLength={32000} onChange={(event) => setQuestion(event.target.value)} onKeyDown={handleComposerKeyDown} placeholder="Задайте уточняющий вопрос…" disabled={!agent.historyReady || !chat.data || Boolean(chat.data.archivedAt) || busy} />
+        <div className={styles.composerActions}>{busy
+          ? <button className={styles.send} type="button" aria-label="Остановить ответ" onClick={() => void client.abort()}>■</button>
+          : <button className={styles.send} type="button" aria-label="Отправить вопрос" disabled={!question.trim() || !agent.historyReady || !chat.data || Boolean(chat.data.archivedAt)} onClick={() => void ask(question)}><ArrowUp size={23} strokeWidth={2} /></button>}
+        </div>
+      </div>
       {error && <p role="alert" className={styles.error}>{error}</p>}
-      <small>Ответ помощника проверяйте по сохранённому разбору и источникам.</small>
-    </form>
+      <p className={styles.composerHint}>Enter — отправить · Shift + Enter — новая строка</p>
+    </div>
   </>
 }
 

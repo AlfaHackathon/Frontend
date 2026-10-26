@@ -11,7 +11,7 @@ import { BankShell } from '@/pages/bank/ui/BankShell'
 import { BankIcon } from '@/pages/bank/ui/BankIcon'
 import { ChatError } from './ChatError'
 import { env, routes } from '@/shared/config'
-import { SmoothText } from './SmoothText'
+import { SmoothText } from '@/shared/ui/smooth-text/SmoothText'
 import styles from './ChatPage.module.css'
 
 const TOKEN_KEY = 'alfa-briefing:agent-token'
