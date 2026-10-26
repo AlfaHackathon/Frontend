@@ -30,6 +30,7 @@ export interface PublicPersonalInsight extends PublicInsightBase {
   kind: 'personal'
   currentRevision: {
     conclusion: string | null
+    status: string | null
     createdAt: string
     category: PublicCategory | null
     companyImportance: { score: number | null; rationale: string } | null
@@ -145,6 +146,15 @@ function sourcesText(sources: PublicInsightSource[] | null) {
   return `${n} ${word}`
 }
 
+function insightTag(item: PublicInsight, status: string | null | undefined): Insight['tag'] {
+  if (item.indicators?.length) return { text: 'Расчёт', tone: 'green' }
+  if (status === 'forecast') return { text: 'Прогноз', tone: 'blue' }
+  const labels = (item.sources ?? []).map((source) => sourceLabel(source.kind))
+  if (labels.includes('Новости')) return { text: 'Новость', tone: 'blue' }
+  if (labels.includes('Документы компании')) return { text: 'Документ компании', tone: 'blue' }
+  return undefined
+}
+
 function splitConclusion(text: string) {
   const match = text.match(/^(.+?[.!?])\s+(.+)$/s)
   return match ? { title: match[1], rest: match[2] } : { title: text, rest: '' }
@@ -178,7 +188,7 @@ export function toInsight(item: PublicInsight): Insight {
     summary: generalTitle
       ? [conclusion.title, conclusion.rest].filter(Boolean).join(' ')
       : revision?.companyImportance?.rationale || conclusion.rest,
-    tag: item.indicators?.length ? { text: 'Расчёт', tone: 'green' } : undefined,
+    tag: insightTag(item, revision?.status),
     sources: sourcesText(item.sources),
     status: item.requiresReassessment ? 'Требует переоценки' : '',
     pending: false,
